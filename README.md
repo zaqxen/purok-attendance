@@ -41,7 +41,7 @@ npm test
 npm run preview
 ```
 
-`docs/` is the published site. `google/` is the private Apps Script application. `lib/attendance.js` is the shared calendar and report calculation. Run preparation after changing it or `google/Admin.template.html`. Upload only the generated `Admin.html`, not the template, to Google.
+`docs/` is the published site. `google/` is the private Apps Script application. `lib/attendance.js` is the shared calendar and report calculation. Run preparation after changing the Google source, calendar or `google/Admin.template.html`. For account setup, paste the generated `google/Purok.gs` as the project's only source file, plus appsscript.json. The separate source files are for development.
 
 `npm run demo` overwrites published report files with fictional data. Run it only during initial development, never after publishing real reports. Developing code must preserve `docs/data/` and the latest remote commits from the administrator.
 

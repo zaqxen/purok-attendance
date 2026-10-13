@@ -5,7 +5,7 @@ The website initially shows fictional records. Complete this setup once, using t
 ## 1. Create your Google application
 
 1. Sign into your chosen administrator Google account and open [Google Apps Script](https://script.google.com/home/start). Create a new project called **Purok attendance**.
-2. Copy these repository files into the project: [Code.gs](google/Code.gs), [Legacy.gs](google/Legacy.gs), [Attendance.gs](google/Attendance.gs), and an HTML file named **Admin** containing [Admin.html](google/Admin.html). Delete the default empty Code file first if necessary. Do not upload Admin.template.html.
+2. Open [Purok.gs](google/Purok.gs), choose **Raw**, and copy the whole file. Replace all text in the new project's default **Code.gs** with it. This single file includes the private dashboard, calendar, importer and publisher. Do not also paste the separate source files.
 3. In Project Settings, enable **Show appsscript.json manifest file**. Replace that file with [appsscript.json](google/appsscript.json).
 4. Under Project Settings → Script properties, add **ADMIN_EMAIL**, with your administrator Gmail address as its value. This account must also own/deploy the script. Keep other properties managed by the app.
 5. Save. Choose **Deploy → New deployment → Web app**. Set **Execute as: User accessing the web app** and **Who has access: Only myself**. Do not select anonymous or anyone access. Authorize the requested Google permissions under your account. The manifest also specifies owner-only access.
@@ -36,6 +36,6 @@ For routine updates, use **Save & publish** after marking attendance. Use **Save
 
 If publication fails, your saved private records remain in Google and the last successful public report stays available. Fix the connection and retry Publish. If you see a concurrent-edit message, reload before editing again; the app never silently overwrites another session.
 
-When changing the Google application source later, run preparation locally, update the project files, and use **Manage deployments → Edit → New version** to update the existing deployment while preserving its URL. Keep owner-only access.
+When changing the Google application source later, run preparation locally, replace Code.gs with the regenerated Purok.gs, and use **Manage deployments → Edit → New version** to update the existing deployment while preserving its URL. Keep owner-only access.
 
 Back up the private application workbook periodically using Google Drive's Make a copy. To restore, set the private script property **DATA_SPREADSHEET_ID** to the verified backup workbook's ID. Do not edit the Records table by hand; it stores dated records and a revision used to prevent conflicting saves.

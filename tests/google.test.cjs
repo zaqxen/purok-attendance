@@ -310,6 +310,12 @@ test('generated Google HTML and public scripts are syntactically valid and share
 	assert.equal(html.includes('/* CALENDAR_SOURCE */'), false);
 	new vm.Script(html.match(/<script>([\s\S]*?)<\/script>/)[1]);
 	new vm.Script(fs.readFileSync(path.join(root, 'docs/app.js'), 'utf8'));
+	const bundle = fs.readFileSync(path.join(root, 'google/Purok.gs'), 'utf8');
+	const bundledContext = vm.createContext({});
+	vm.runInContext(bundle, bundledContext);
+	assert.equal(bundledContext.ADMIN_HTML_, html);
+	assert.equal(bundledContext.Attendance.firstWeek(2026), '2025-12-30');
+	assert.equal(bundle.includes('createHtmlOutputFromFile'), false);
 	assert.equal(
 		JSON.parse(fs.readFileSync(path.join(root, 'google/appsscript.json'), 'utf8')).webapp.access,
 		'MYSELF'
