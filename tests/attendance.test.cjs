@@ -90,7 +90,8 @@ test('public export excludes all private profile fields and private absence note
 		'privateNote'
 	])
 		assert.equal(json.includes(value), false);
-	assert.equal(s.entries[0].reason, 'Public explanation');
+	assert.equal(json.includes('Public explanation'), false);
+	assert.equal(Object.hasOwn(s.entries[0], 'reason'), false);
 });
 test('owner attendance counts as an ordinary explicit record; no phantom +1', () => {
 	const s = A.snapshot(

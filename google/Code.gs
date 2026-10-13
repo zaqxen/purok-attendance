@@ -154,7 +154,7 @@ function saveAttendance(payload) {
 			if (change.day !== '' && Attendance.DAYS.indexOf(change.day) === -1)
 				throw new Error('Select a valid attendance day.');
 			var publicReason = text_(change.publicReason, 500),
-				privateNote = text_(change.privateNote, 1500);
+				privateNote = text_(change.privateNote, 6000);
 			var existing = state.entries.find(function (e) {
 				return e.memberId === change.memberId && e.year === payload.year && e.week === payload.week;
 			});
@@ -164,11 +164,65 @@ function saveAttendance(payload) {
 				year: payload.year,
 				week: payload.week,
 				day: change.day,
-				publicReason: publicReason,
-				privateNote: privateNote
+				publicReason: '',
+				privateNote: [privateNote, publicReason]
+					.filter(function (note, index, notes) {
+						return note && notes.indexOf(note) === index;
+					})
+					.join('\n')
 			};
 			if (existing) Object.assign(existing, record);
 			else if (change.day || publicReason || privateNote) state.entries.push(record);
+		});
+	});
+}
+function restorePrivateComments(payload) {
+	return mutate_(payload.revision, function (state) {
+		if (!Array.isArray(payload.comments) || payload.comments.length > 10000)
+			throw new Error('Invalid comment backup.');
+		var seen = {};
+		payload.comments.forEach(function (comment) {
+			Attendance.weekStart(comment.year, comment.week);
+			if (
+				!state.members.some(function (member) {
+					return member.id === comment.memberId;
+				})
+			)
+				throw new Error('Import the matching members before restoring comments.');
+			var key = comment.memberId + ':' + comment.year + ':' + comment.week;
+			if (seen[key]) throw new Error('Duplicate comment in backup.');
+			seen[key] = true;
+			var note = text_(comment.note, 6000);
+			var entry = state.entries.find(function (entry) {
+				return (
+					entry.memberId === comment.memberId &&
+					entry.year === comment.year &&
+					entry.week === comment.week
+				);
+			});
+			if (!entry) {
+				entry = {
+					id: Utilities.getUuid(),
+					memberId: comment.memberId,
+					year: comment.year,
+					week: comment.week,
+					day: ''
+				};
+				state.entries.push(entry);
+			}
+			entry.privateNote = text_(
+				[
+					entry.privateNote || '',
+					entry.publicReason || '',
+					(entry.privateNote || '').includes(note) ? '' : note
+				]
+					.filter(function (value, index, values) {
+						return value && values.indexOf(value) === index;
+					})
+					.join('\n'),
+				6000
+			);
+			entry.publicReason = '';
 		});
 	});
 }

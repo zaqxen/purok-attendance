@@ -116,8 +116,7 @@ var Attendance = (function () {
 				return {
 					memberId: entry.memberId,
 					week: entry.week,
-					day: entry.day || '',
-					reason: entry.publicReason || ''
+					day: entry.day || ''
 				};
 			})
 			.filter(function (entry) {

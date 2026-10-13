@@ -4,11 +4,11 @@ A read-only attendance website hosted on GitHub Pages, with a private Google adm
 
 **[Open the website](https://zaqxen.github.io/purok-attendance/)** · **[Connect the private dashboard](SETUP.md)**
 
-The website now contains attendance imported from the existing Google Sheet for 2024–2026, including cell explanations. Names, monitoring dates and attendance are intentionally public. Contact details, birthdays, private profiles, credentials and the source spreadsheet ID are not included in this repository.
+The website now contains attendance imported from the existing Google Sheet for 2024–2026. Names, monitoring dates and attendance are intentionally public. Contact details, birthdays, private profiles, credentials and the source spreadsheet ID are not included in this repository.
 
 ## Daily use
 
-Open the website to view the current reporting year, search names, read attendance explanations, and compare saved years. The Administrator button opens your Google dashboard after setup. Only your configured Google account can access it.
+Open the website to view the current reporting year, search names, and compare saved years. The Administrator button opens your Google dashboard after setup. Only your configured Google account can access it.
 
 In the dashboard, edit attendance, profiles, monitoring periods, transfers and Doktrina records. Save changes privately, then publish when ready. Publishing writes a sanitized report to GitHub. GitHub Pages normally needs a few minutes to deploy it. Visitors read only GitHub files and make zero Google requests. An open visitor page shows its loaded version until refreshed.
 
@@ -27,7 +27,7 @@ Current-year totals advance when you publish after a week closes. This deliberat
 
 ## Data boundaries
 
-Google holds birthdates, mobiles, addresses, gender, classification, private notes, Doktrina, and publishing credentials. GitHub receives member IDs/names, monitoring dates, attendance, explicitly public reasons and computed totals. Public reports and Git history are accessible to everyone, even if search engines are asked not to index the site. Removing a record from the current website does not erase Git history.
+Google holds birthdates, mobiles, addresses, gender, classification, all attendance comments, Doktrina, and publishing credentials. GitHub receives member IDs/names, monitoring dates, attendance, computed totals. Public reports and Git history are accessible to everyone, even if search engines are asked not to index the site. Removing a record from the current website does not erase Git history.
 
 Keep the application workbook and original workbook Restricted in Google Drive. Copy the private workbook periodically for a backup; GitHub is only a backup of the public reports. History is retained by the application until you explicitly remove the underlying Google/GitHub records; free provider availability is not a permanent service guarantee.
 

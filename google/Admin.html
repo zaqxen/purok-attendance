@@ -7,6 +7,7 @@
 		<title>Purok administrator</title>
 		<style>
 			:root {
+				font-size: 12px;
 				font-family: system-ui, sans-serif;
 				color: #233e34;
 				background: #f5f4ed;
@@ -34,7 +35,7 @@
 				display: none !important;
 			}
 			header {
-				padding: 22px 5%;
+				padding: 8px 12px;
 				background: #fffef9;
 				border-bottom: 1px solid #dce3d6;
 				display: flex;
@@ -44,7 +45,7 @@
 			}
 			header strong {
 				font:
-					25px Georgia,
+					18px Georgia,
 					serif;
 			}
 			header small {
@@ -56,8 +57,8 @@
 			}
 			main {
 				max-width: 1200px;
-				margin: 25px auto;
-				padding: 0 20px;
+				margin: 8px auto;
+				padding: 0 10px;
 			}
 			button,
 			.button {
@@ -65,7 +66,7 @@
 				background: #fffef9;
 				color: #233e34;
 				border-radius: 8px;
-				padding: 10px 15px;
+				padding: 6px 10px;
 				text-decoration: none;
 				font-size: 12px;
 				font-weight: 600;
@@ -79,14 +80,14 @@
 				display: flex;
 				gap: 8px;
 				flex-wrap: wrap;
-				margin: 22px 0;
+				margin: 8px 0;
 			}
 			.active {
 				background: #254b3d;
 				color: white;
 			}
 			.panel {
-				padding: 24px;
+				padding: 10px;
 				border: 1px solid #dce3d6;
 				border-radius: 12px;
 				background: #fffef9;
@@ -98,11 +99,11 @@
 				font-weight: 400;
 			}
 			h1 {
-				font-size: 30px;
+				font-size: 20px;
 				margin: 0 0 8px;
 			}
 			h2 {
-				font-size: 23px;
+				font-size: 16px;
 				margin: 0 0 15px;
 			}
 			p,
@@ -116,7 +117,7 @@
 				gap: 15px;
 				align-items: end;
 				flex-wrap: wrap;
-				margin: 20px 0;
+				margin: 8px 0;
 			}
 			.field label,
 			label.field {
@@ -157,10 +158,10 @@
 				font-size: 10px;
 				color: #6d7868;
 				border-bottom: 1px solid #dce3d6;
-				padding: 12px 10px;
+				padding: 6px 8px;
 			}
 			td {
-				padding: 13px 10px;
+				padding: 5px 8px;
 				border-bottom: 1px solid #e8ece1;
 				vertical-align: top;
 			}
@@ -176,7 +177,7 @@
 			}
 			td textarea {
 				min-width: 200px;
-				min-height: 45px;
+				min-height: 32px;
 			}
 			td.name {
 				min-width: 160px;
@@ -198,12 +199,12 @@
 			}
 			.summary {
 				display: flex;
-				gap: 30px;
+				gap: 15px;
 				flex-wrap: wrap;
-				margin: 20px 0;
+				margin: 8px 0;
 			}
 			.summary b {
-				font-size: 25px;
+				font-size: 18px;
 				display: block;
 			}
 			.summary span {
@@ -281,7 +282,7 @@
 					grid-column: auto;
 				}
 				.panel {
-					padding: 18px;
+					padding: 10px;
 				}
 				.toolbar .field {
 					flex: 1;
@@ -289,6 +290,38 @@
 				td textarea {
 					min-width: 160px;
 				}
+			}
+			.year-grid {
+				width: max-content;
+				font-size: 10px;
+				margin-top: 8px;
+			}
+			.year-grid th,
+			.year-grid td {
+				min-width: 36px;
+				padding: 4px;
+				text-align: center;
+			}
+			.year-grid th:first-child {
+				min-width: 170px;
+				max-width: 170px;
+				position: sticky;
+				left: 0;
+				text-align: left;
+				background: #fffef9;
+			}
+			.year-grid .attended {
+				background: #e5efdf;
+			}
+			.year-grid .absent {
+				background: #faebe3;
+			}
+			.year-grid .outside {
+				background: #f0f2e9;
+				color: #87917f;
+			}
+			.year-grid sup {
+				color: #a68a4a;
 			}
 		</style>
 	</head>
@@ -325,7 +358,7 @@
 					<h2>Update a week's attendance</h2>
 					<p>
 						Choose the day attended. Leave it blank for absence. Save the batch, then publish when
-						you finish. Public explanations and private notes are separate.
+						you finish. All comments are private and are never published.
 					</p>
 					<div class="toolbar">
 						<div class="field">
@@ -345,14 +378,17 @@
 								<tr>
 									<th>Member</th>
 									<th>Day attended</th>
-									<th>Public absence explanation</th>
-									<th>Private note</th>
+									<th>Private comment</th>
 								</tr>
 							</thead>
 							<tbody id="attendance-rows"></tbody>
 						</table>
 					</div>
 					<p id="attendance-note"></p>
+					<details open>
+						<summary>Year overview · hover over a marked cell for its private comment</summary>
+						<div id="private-overview" class="table-wrap"></div>
+					</details>
 				</section>
 				<section id="members-view" class="panel" hidden>
 					<div class="toolbar">
@@ -399,6 +435,19 @@
 					</div>
 				</section>
 				<section id="setup-view" hidden>
+					<div class="panel">
+						<h2>Restore private comments</h2>
+						<p>
+							After importing the matching members, select your private comment backup. This file
+							stays in your private Google records.
+						</p>
+						<input
+							id="comment-backup"
+							type="file"
+							accept="application/json,.json"
+							aria-label="Private comment backup"
+						/>
+					</div>
 					<article class="panel">
 						<h2>Connect GitHub publishing</h2>
 						<p>
@@ -624,6 +673,26 @@
 				dirty = false,
 				renderedYear,
 				renderedWeek;
+			function birthdayBadge(member, reference = today()) {
+				if (!/^\d{4}-\d{2}-\d{2}$/.test(member.birthDate || '')) return '';
+				const now = new Date(reference + 'T00:00:00Z');
+				const month = Number(member.birthDate.slice(5, 7)) - 1;
+				const day = Number(member.birthDate.slice(8, 10));
+				let year = now.getUTCFullYear();
+				const anniversary = (year) =>
+					new Date(
+						Date.UTC(
+							year,
+							month,
+							Math.min(day, new Date(Date.UTC(year, month + 1, 0)).getUTCDate())
+						)
+					);
+				let next = anniversary(year);
+				if (next < now) next = anniversary(year + 1);
+				return (next - now) / 86400000 <= 7
+					? ' <span title="Birthday within 7 days" aria-label="Birthday within 7 days">🎂</span>'
+					: '';
+			}
 			function message(text, error = false) {
 				$('message').textContent = text;
 				$('message').classList.toggle('error', error);
@@ -774,8 +843,7 @@ var Attendance = (function () {
 				return {
 					memberId: entry.memberId,
 					week: entry.week,
-					day: entry.day || '',
-					reason: entry.publicReason || ''
+					day: entry.day || ''
 				};
 			})
 			.filter(function (entry) {
@@ -934,6 +1002,7 @@ if (typeof module !== 'undefined') module.exports = Attendance;
 							(m) =>
 								'<tr><td class="name">' +
 								esc(name(m)) +
+								birthdayBadge(m) +
 								'<br><small>' +
 								esc(m.status) +
 								'</small></td><td>' +
@@ -1023,6 +1092,7 @@ if (typeof module !== 'undefined') module.exports = Attendance;
 								esc(m.id) +
 								'"><td class="name">' +
 								esc(name(m)) +
+								birthdayBadge(m) +
 								'</td><td><select data-field="day"><option value="">Blank · absent</option>' +
 								Attendance.DAYS.map(
 									(d) =>
@@ -1034,19 +1104,89 @@ if (typeof module !== 'undefined') module.exports = Attendance;
 										d +
 										'</option>'
 								).join('') +
-								'</select></td><td><textarea data-field="publicReason" maxlength="500" placeholder="Visible to anyone viewing the website">' +
-								esc(e.publicReason || '') +
-								'</textarea></td><td><textarea data-field="privateNote" maxlength="1500" placeholder="Only you can see this">' +
-								esc(e.privateNote || '') +
+								'</select></td><td><textarea data-field="privateNote" maxlength="6000" placeholder="Only you can see this">' +
+								esc(
+									[e.privateNote, e.publicReason]
+										.filter((note, index, notes) => note && notes.indexOf(note) === index)
+										.join('\n')
+								) +
 								'</textarea></td></tr>'
 							);
 						})
-						.join('') || '<tr><td colspan="4">No members monitored this week.</td></tr>';
+						.join('') || '<tr><td colspan="3">No members monitored this week.</td></tr>';
 				$('attendance-note').textContent =
 					week > Attendance.completedThrough(year, today())
 						? 'This week is open or in the future. Blank cells will not enter absence percentages until a publication after the week finishes.'
 						: eligible.length +
 							' monitored members. Your own attendance should be represented by your member row.';
+				const report = Attendance.snapshot(state, year, today(), 'preview');
+				const calendar = Attendance.weeks(year);
+				const records = new Map(
+					state.entries
+						.filter((entry) => entry.year === year)
+						.map((entry) => [entry.memberId + ':' + entry.week, entry])
+				);
+				$('private-overview').innerHTML =
+					'<table class="year-grid"><thead><tr><th>Member</th>' +
+					calendar.map((week) => '<th>W' + week.number + '</th>').join('') +
+					'</tr></thead><tbody>' +
+					report.members
+						.map((member) => {
+							const profile = state.members.find((profile) => profile.id === member.id);
+							return (
+								'<tr><th>' +
+								esc(member.name) +
+								birthdayBadge(profile) +
+								'</th>' +
+								calendar
+									.map((week) => {
+										const entry = records.get(member.id + ':' + week.number) || {};
+										const eligible = Attendance.isEligible(state.periods, member.id, week.start);
+										const note = [entry.privateNote, entry.publicReason].filter(Boolean).join('\n');
+										return (
+											'<td class="' +
+											(!eligible
+												? 'outside'
+												: entry.day
+													? 'attended'
+													: week.number <= report.throughWeek
+														? 'absent'
+														: '') +
+											'" title="' +
+											esc(note || (eligible ? entry.day || 'Blank' : 'Outside monitoring')) +
+											'">' +
+											esc(
+												!eligible
+													? '—'
+													: entry.day === 'Recorded'
+														? '✓'
+														: entry.day || (week.number <= report.throughWeek ? '·' : '…')
+											) +
+											(note ? '<sup>•</sup>' : '') +
+											'</td>'
+										);
+									})
+									.join('') +
+								'</tr>'
+							);
+						})
+						.join('') +
+					'</tbody><tfoot><tr><th>Monitored</th>' +
+					report.weekly
+						.map(
+							(week) => '<td>' + (week.week <= report.throughWeek ? week.eligible : '—') + '</td>'
+						)
+						.join('') +
+					'</tr><tr><th>Absent %</th>' +
+					report.weekly
+						.map(
+							(week) =>
+								'<td>' +
+								(week.absencePercent === null ? '—' : Math.round(week.absencePercent) + '%') +
+								'</td>'
+						)
+						.join('') +
+					'</tr></tfoot></table>';
 			}
 			function canLeave() {
 				if (!dirty) return true;
@@ -1060,7 +1200,7 @@ if (typeof module !== 'undefined') module.exports = Attendance;
 					const changes = [...document.querySelectorAll('[data-attendee]')].map((row) => ({
 						memberId: row.dataset.attendee,
 						day: row.querySelector('[data-field="day"]').value,
-						publicReason: row.querySelector('[data-field="publicReason"]').value,
+						publicReason: '',
 						privateNote: row.querySelector('[data-field="privateNote"]').value
 					}));
 					setState(
@@ -1294,6 +1434,21 @@ if (typeof module !== 'undefined') module.exports = Attendance;
 					message('Publishing connected. The token is stored privately in Google.');
 				}).catch(() => {});
 			};
+			$('comment-backup').onchange = () =>
+				busy(async () => {
+					const file = $('comment-backup').files[0];
+					if (!file) return;
+					const backup = JSON.parse(await file.text());
+					if (backup.schemaVersion !== 1) throw new Error('Unsupported comment backup.');
+					setState(
+						await call('restorePrivateComments', {
+							revision: state.revision,
+							comments: backup.comments
+						})
+					);
+					$('comment-backup').value = '';
+					message('Comments restored privately. Publishing never includes comments.');
+				}).catch(() => {});
 			$('preview-import').onclick = () =>
 				busy(async () => {
 					if (state.members.length) {
@@ -1312,7 +1467,7 @@ if (typeof module !== 'undefined') module.exports = Attendance;
 									(m.id === selected ? 'selected' : '') +
 									'>' +
 									esc(name(m)) +
-									'</option>'
+									+'</option>'
 							)
 							.join('');
 					let html =

@@ -344,8 +344,15 @@ function importLegacy(payload) {
 						year: candidate.year,
 						week: cell.week,
 						day: day,
-						publicReason: reason,
-						privateNote: text_(String(cell.note || ''), 1500)
+						publicReason: '',
+						privateNote: text_(
+							[String(cell.note || ''), reason]
+								.filter(function (note, index, notes) {
+									return note && notes.indexOf(note) === index;
+								})
+								.join('\n'),
+							2000
+						)
 					});
 				}
 			});

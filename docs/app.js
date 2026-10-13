@@ -7,7 +7,7 @@
 			(ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
 		);
 	const percent = (value) =>
-		value === null || value === undefined ? '—' : Math.round(value) + '%';
+		value === null || value === undefined ? '—' : Math.round(value * 10) / 10 + '%';
 	const today = () =>
 		new Intl.DateTimeFormat('en-CA', {
 			timeZone: 'Asia/Dubai',
@@ -84,7 +84,7 @@
 				: 'No completed weeks published';
 			$('attendance-total').textContent = percent(report.overall.percent);
 			$('attendance-detail').textContent =
-				report.overall.attended + ' of ' + report.overall.monitored + ' eligible member-weeks';
+				report.overall.attended + ' of ' + report.overall.monitored + ' member-weeks';
 			$('absence-total').textContent = report.overall.absent;
 			$('published-date').textContent = report.unpublished
 				? 'This year has not been published yet'
@@ -184,20 +184,12 @@
 				html +=
 					'<td><button class="cell ' +
 					status +
-					(entry?.reason ? ' comment' : '') +
 					'" data-cell="' +
 					esc(member.id) +
 					':' +
 					week.number +
 					'" aria-label="' +
-					esc(
-						member.name +
-							', week ' +
-							week.number +
-							': ' +
-							statusLabel +
-							(entry?.reason ? '. Explanation available.' : '')
-					) +
+					esc(member.name + ', week ' + week.number + ': ' + statusLabel) +
 					'">' +
 					esc(text) +
 					'</button></td>';
@@ -229,7 +221,11 @@
 							: percent(week.absencePercent) + ' absent') +
 						'"><span>' +
 						week.week +
-						'</span></button>'
+						'</span><b class="bar-percent">' +
+						percent(week.absencePercent) +
+						'</b><small class="bar-members">n=' +
+						week.eligible +
+						'</small></button>'
 				)
 				.join('') +
 			'</div>';
@@ -267,7 +263,11 @@
 				? Math.min(report.throughWeek + 1, Attendance.weeks(selectedYear).length)
 				: 1;
 		const heading = $('attendance-table').querySelector('[data-week="' + number + '"]');
-		if (heading) $('table-scroll').scrollLeft = Math.max(0, heading.offsetLeft - 235);
+		if (heading)
+			$('table-scroll').scrollLeft = Math.max(
+				0,
+				heading.offsetLeft - $('attendance-table').querySelector('.name').offsetWidth
+			);
 	}
 	function showCell(button) {
 		const key = button.dataset.cell,
@@ -284,16 +284,15 @@
 			week +
 			'</strong><p>' +
 			esc(
-				entry?.reason ||
-					(button.classList.contains('outside')
-						? 'This person was outside their monitoring period.'
-						: button.classList.contains('pending')
-							? 'This week is not included in the published absence totals yet.'
-							: button.classList.contains('present')
-								? entry.day === 'Recorded'
-									? 'Attendance recorded; original day not specified.'
-									: 'Attended on ' + entry.day + '.'
-								: 'No public absence explanation was recorded.')
+				button.classList.contains('outside')
+					? 'This person was outside their monitoring period.'
+					: button.classList.contains('pending')
+						? 'This week is not included in the published absence totals yet.'
+						: button.classList.contains('present')
+							? entry.day === 'Recorded'
+								? 'Attendance recorded; original day not specified.'
+								: 'Attended on ' + entry.day + '.'
+							: 'Absent.'
 			) +
 			'</p>';
 		popup.hidden = false;

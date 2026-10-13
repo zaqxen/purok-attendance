@@ -24,11 +24,11 @@ http
 				revision: 'preview',
 				configuredPublishing: false,
 				publication: { publishedAt: '' },
-				members: report.members.map((m) => ({
+				members: report.members.map((m, index) => ({
 					id: m.id,
 					firstName: m.name,
 					lastName: '',
-					birthDate: '',
+					birthDate: index === 0 ? '1980-10-18' : '',
 					mobile: '',
 					address: 'Fictional address',
 					gender: '',
@@ -36,11 +36,11 @@ http
 					status: 'Preview'
 				})),
 				periods: report.periods.map((p, i) => ({ ...p, id: 'p' + i })),
-				entries: report.entries.map((e) => ({
+				entries: report.entries.map((e, index) => ({
 					...e,
 					year: 2026,
-					publicReason: e.reason,
-					privateNote: ''
+					publicReason: '',
+					privateNote: index === 0 ? 'Fictional private comment for local layout verification.' : ''
 				})),
 				doctrine: []
 			};

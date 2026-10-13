@@ -16,6 +16,67 @@ const member = {
 	kap: 'K',
 	status: 'Active'
 };
+test('private comment restore preserves attendance and rejects invalid batches atomically', () => {
+	const h = harness();
+	h.context.saveAttendance({
+		revision: 'r1',
+		year: 2026,
+		week: 1,
+		changes: [{ memberId: 'a', day: 'Fri', publicReason: '', privateNote: 'Existing note' }]
+	});
+	const comment = { memberId: 'a', year: 2026, week: 1, note: 'Restored private comment' };
+	const before = clone(h.state);
+	assert.throws(
+		() =>
+			h.context.restorePrivateComments({
+				revision: h.state.revision,
+				comments: [comment, { ...comment, memberId: 'missing' }]
+			}),
+		/matching members/
+	);
+	assert.deepEqual(h.state, before);
+	h.context.restorePrivateComments({ revision: h.state.revision, comments: [comment] });
+	assert.equal(h.state.entries[0].day, 'Fri');
+	assert.equal(h.state.entries[0].privateNote, 'Existing note\nRestored private comment');
+	h.context.restorePrivateComments({ revision: h.state.revision, comments: [comment] });
+	assert.equal(h.state.entries[0].privateNote, 'Existing note\nRestored private comment');
+	const published = JSON.stringify(A.snapshot(h.state, 2026, '2026-10-13', 'v'));
+	assert.equal(published.includes('Restored private comment'), false);
+});
+test('private birthday badges cover today, seven days, year rollover and leap birthdays without dates', () => {
+	const html = fs.readFileSync(
+		require('node:path').join(__dirname, '..', 'google/Admin.template.html'),
+		'utf8'
+	);
+	const source = html.slice(
+		html.indexOf('function birthdayBadge('),
+		html.indexOf('function message(')
+	);
+	const context = vm.createContext({});
+	vm.runInContext(source, context);
+	for (const [birthDate, today] of [
+		['1980-10-13', '2026-10-13'],
+		['1980-10-20', '2026-10-13'],
+		['1980-01-02', '2026-12-28'],
+		['1980-02-29', '2027-02-28']
+	]) {
+		const badge = context.birthdayBadge({ birthDate }, today);
+		assert.ok(badge.includes('🎂'));
+		assert.equal(badge.includes(birthDate), false);
+	}
+	assert.equal(context.birthdayBadge({ birthDate: '1980-10-21' }, '2026-10-13'), '');
+	assert.equal(context.birthdayBadge({ birthDate: '' }, '2026-10-13'), '');
+});
+test('published data files contain attendance only, without comments or birthday information', () => {
+	const folder = require('node:path').join(__dirname, '..', 'docs/data');
+	for (const file of fs.readdirSync(folder).filter((file) => /^\d{4}\.json$/.test(file))) {
+		const report = JSON.parse(fs.readFileSync(require('node:path').join(folder, file), 'utf8'));
+		for (const entry of report.entries)
+			assert.deepEqual(Object.keys(entry).sort(), ['day', 'memberId', 'week']);
+		for (const profile of report.members)
+			assert.deepEqual(Object.keys(profile).sort(), ['id', 'name']);
+	}
+});
 function harness(initial) {
 	let saved = clone(
 		initial || {
@@ -98,7 +159,8 @@ test('all exposed Google operations deny an anonymous or different account befor
 		'configurePublishing',
 		'publishReports',
 		'previewLegacyImport',
-		'importLegacy'
+		'importLegacy',
+		'restorePrivateComments'
 	];
 	for (const account of ['', 'visitor@example.test']) {
 		h.email = account;
@@ -251,7 +313,7 @@ test('publication exposes an allowlist only and a GitHub failure preserves saved
 		'doctrine'
 	])
 		assert.equal(json.includes(secret), false, secret);
-	assert.equal(json.includes('Public explanation'), true);
+	assert.equal(json.includes('Public explanation'), false);
 	assert.equal(h.state.publication.commit, 'commit');
 	// Unchanged reports are reused on the next publish; only the manifest changes.
 	h.context.publishReports(h.state.revision);
@@ -468,7 +530,8 @@ test('Google import preserves published IDs, name aliases and explanations on bl
 		inviterAssignments: {}
 	});
 	assert.equal(h.state.entries[0].day, '');
-	assert.equal(h.state.entries[0].publicReason, 'Work commitment');
+	assert.equal(h.state.entries[0].publicReason, '');
+	assert.equal(h.state.entries[0].privateNote, 'Work commitment');
 	assert.equal(h.state.entries[0].memberId, 'import-stable');
 });
 test('source birthdays retain the source workbook timezone during import', () => {
