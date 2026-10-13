@@ -686,7 +686,9 @@ function previewLegacyImport(source) {
 	raw.slice(2).forEach(function (row, i) {
 		if (!row[6] || !row[7]) return;
 		var birth =
-			row[0] instanceof Date ? Utilities.formatDate(row[0], 'Asia/Dubai', 'yyyy-MM-dd') : '';
+			row[0] instanceof Date
+				? Utilities.formatDate(row[0], book.getSpreadsheetTimeZone(), 'yyyy-MM-dd')
+				: '';
 		members.push({
 			id: 'import-' + Utilities.getUuid(),
 			firstName: String(row[6]).trim(),
@@ -709,7 +711,7 @@ function previewLegacyImport(source) {
 		values.slice(3).forEach(function (row, index) {
 			if (!row[0] || /average|overall|total/i.test(row[0])) return;
 			var name = String(row[0])
-					.replace(/^[^a-zA-Z]+/, '')
+					.replace(/^[^\p{L}\p{N}]+/u, '')
 					.trim(),
 				norm = normalizedName_(name);
 			var matches = members.filter(function (m) {

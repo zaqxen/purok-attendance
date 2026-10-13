@@ -300,6 +300,77 @@ test('reviewed legacy import excludes 1/X, keeps notes private, and refuses unde
 		/empty private workbook/
 	);
 });
+test('source birthdays retain the source workbook timezone during import', () => {
+	const h = harness();
+	const birthday = vm.runInContext("new Date('1990-05-01T16:00:00Z')", h.context);
+	const row = Array(13).fill('');
+	row[0] = birthday;
+	row[6] = 'Sample';
+	row[7] = 'Member';
+	row[8] = 'L';
+	row[9] = 'K';
+	const range = {
+		getValues: () => [[], [], row],
+		getDisplayValues: () => [[], [], row.map(String)]
+	};
+	h.context.SpreadsheetApp.openById = () => ({
+		getSpreadsheetTimeZone: () => 'Asia/Manila',
+		getSheetByName: (name) => (name === 'Purok2026' ? { getDataRange: () => range } : null)
+	});
+	h.context.Utilities.formatDate = (value, zone) => {
+		assert.equal(zone, 'Asia/Manila');
+		assert.equal(value.toISOString(), '1990-05-01T16:00:00.000Z');
+		return '1990-05-02';
+	};
+	const plan = h.context.previewLegacyImport('sourceworkbook1234567890');
+	assert.equal(plan.members[0].birthDate, '1990-05-02');
+});
+test('private table serialization round-trips profiles without interpreting text as formulas', () => {
+	let rows = [];
+	const sheet = {
+		getMaxRows: () => 1000,
+		getLastRow: () => rows.length,
+		setFrozenRows: () => {},
+		getDataRange: () => ({ getValues: () => clone(rows) }),
+		getRange: (start, column, count) => ({
+			setNumberFormat() {
+				return this;
+			},
+			setValues(values) {
+				values.forEach((row, i) => (rows[start - 1 + i] = clone(row)));
+				return this;
+			},
+			clearContent() {
+				rows.splice(start - 1, count);
+			}
+		})
+	};
+	const context = vm.createContext({
+		SpreadsheetApp: { openById: () => ({ getSheetByName: () => sheet }) },
+		PropertiesService: { getScriptProperties: () => ({ getProperty: () => 'private' }) }
+	});
+	vm.runInContext(
+		fs.readFileSync(require('node:path').join(__dirname, '../google/Code.gs'), 'utf8'),
+		context
+	);
+	const state = {
+		revision: 'r1',
+		members: [{ ...member, firstName: '=IMPORTXML("https://example.test","*")' }],
+		periods: [],
+		entries: [],
+		doctrine: [],
+		publication: { digests: {}, versions: {}, publishedAt: '' }
+	};
+	context.writeState_(sheet, state);
+	assert.equal(rows[2][2].startsWith('{'), true);
+	assert.deepEqual(clone(context.loadState_()), state);
+	state.members = [];
+	context.writeState_(sheet, state);
+	assert.equal(rows.length, 2);
+	assert.equal(context.loadState_().members.length, 0);
+	rows.push(['members', 'old', JSON.stringify(member)]);
+	assert.equal(context.loadState_().members.length, 0);
+});
 test('generated Google HTML and public scripts are syntactically valid and share the calculation source', () => {
 	const path = require('node:path'),
 		root = path.join(__dirname, '..');
