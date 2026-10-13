@@ -1,0 +1,11 @@
+{
+	"name": "purok-attendance",
+	"private": true,
+	"version": "1.0.0",
+	"scripts": {
+		"test": "node --test tests/*.test.cjs",
+		"prepare:google": "node tools/prepare-google.cjs",
+		"demo": "node tools/create-demo.cjs",
+		"preview": "node tools/preview.cjs"
+	}
+}

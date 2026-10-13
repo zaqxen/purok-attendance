@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<meta name="referrer" content="no-referrer" />
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'"
+		/>
+		<title>Purok 3 · Attendance</title>
+		<meta
+			name="description"
+			content="Weekly attendance, absence explanations and annual attendance reports."
+		/>
+		<link rel="icon" href="icon.svg" type="image/svg+xml" />
+		<link rel="stylesheet" href="styles.css" />
+		<script src="calendar.js" defer></script>
+		<script src="app.js" defer></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to attendance</a>
+		<header class="topbar">
+			<a class="brand" href="./"
+				><span class="brand-mark" aria-hidden="true">P3</span
+				><span>Purok 3<small>ATTENDANCE &amp; RECORDS</small></span></a
+			><button id="admin-button" class="button secondary">
+				Administrator <span aria-hidden="true">↗</span>
+			</button>
+		</header>
+		<main id="main">
+			<div id="demo-banner" class="notice demo" hidden>
+				<strong>Preview with fictional records</strong
+				><span>This is a working demonstration. Your private Sheet has not been imported.</span>
+			</div>
+			<section class="page-heading">
+				<div>
+					<p class="eyebrow">A CLEAR VIEW, WEEK BY WEEK</p>
+					<h1>Every week tells a story.</h1>
+					<p class="intro">Attendance, shared explanations and a record of the year.</p>
+				</div>
+				<div class="year-control">
+					<label for="year-select">Reporting year</label
+					><select id="year-select" disabled></select>
+					<p id="published-date">Loading published records…</p>
+				</div>
+			</section>
+			<div id="error" class="notice error" role="alert" hidden></div>
+			<div id="loading" class="loading" role="status">Loading attendance…</div>
+			<div id="content" hidden>
+				<section class="stats" aria-label="Year summary">
+					<article>
+						<span>Members in this year's record</span><strong id="member-total">—</strong
+						><small>Includes historical transfers</small>
+					</article>
+					<article>
+						<span>Completed reporting weeks</span><strong id="week-total">—</strong
+						><small id="week-detail">Through the latest publication</small>
+					</article>
+					<article>
+						<span>Attendance across monitored weeks</span><strong id="attendance-total">—</strong
+						><small id="attendance-detail">Eligible weeks only</small>
+					</article>
+					<article>
+						<span>Missed monitored weeks</span><strong id="absence-total">—</strong
+						><small>Outside-monitoring weeks excluded</small>
+					</article>
+				</section>
+				<div class="section-toolbar">
+					<div class="tabs" role="tablist" aria-label="Report view">
+						<button
+							id="attendance-tab"
+							class="selected"
+							role="tab"
+							aria-selected="true"
+							aria-controls="attendance-view"
+						>
+							Attendance</button
+						><button
+							id="insights-tab"
+							role="tab"
+							aria-selected="false"
+							aria-controls="insights-view"
+						>
+							Year insights
+						</button>
+					</div>
+					<label class="search"
+						><span aria-hidden="true">⌕</span
+						><input
+							id="search"
+							type="search"
+							placeholder="Find a name"
+							aria-label="Find a member by name"
+					/></label>
+				</div>
+				<section
+					id="attendance-view"
+					class="panel"
+					role="tabpanel"
+					aria-labelledby="attendance-tab"
+				>
+					<div class="panel-heading">
+						<div>
+							<h2>The weekly record</h2>
+							<p id="grid-description">
+								Choose a name to compare years. Tap a cell to read its explanation.
+							</p>
+						</div>
+						<button id="current-week-button" class="button secondary">Jump to latest week</button>
+					</div>
+					<div class="legend">
+						<span><i class="present-dot"></i>Attended</span
+						><span><i class="absent-dot"></i>Absent</span
+						><span><i class="pending-dot"></i>Not yet reported</span
+						><span><i class="outside-dot"></i>Outside monitoring</span>
+					</div>
+					<div
+						class="table-scroll"
+						id="table-scroll"
+						tabindex="0"
+						aria-label="Attendance table; scroll horizontally for more weeks"
+					>
+						<table id="attendance-table"></table>
+					</div>
+					<p class="table-note">
+						An arrival week counts. A departure week does not. Percentages use only eligible weeks
+						through the published reporting cutoff.
+					</p>
+				</section>
+				<section
+					id="insights-view"
+					class="insights"
+					role="tabpanel"
+					aria-labelledby="insights-tab"
+					hidden
+				>
+					<article class="panel">
+						<div class="panel-heading">
+							<div>
+								<p class="eyebrow">THE GROUP OVER TIME</p>
+								<h2>Weekly absence</h2>
+								<p>
+									Absent members as a percentage of members monitored that week. Bar scale: 0–100%.
+								</p>
+							</div>
+						</div>
+						<div id="weekly-chart" class="weekly-chart"></div>
+						<p id="chart-detail" class="chart-detail" aria-live="polite">
+							Select a week for its totals.
+						</p>
+					</article>
+					<article class="panel">
+						<div class="panel-heading">
+							<div>
+								<p class="eyebrow">EACH MEMBER'S YEAR</p>
+								<h2>Annual attendance</h2>
+								<p>Attended weeks ÷ monitored weeks. Select a name to compare years.</p>
+							</div>
+						</div>
+						<div id="annual-chart" class="annual-chart"></div>
+					</article>
+				</section>
+			</div>
+			<footer>
+				<span>Purok 3 · Attendance record</span
+				><span>Read-only public view · Records updated by the administrator</span>
+			</footer>
+		</main>
+		<div id="cell-popover" class="cell-popover" role="status" hidden></div>
+		<dialog id="history-dialog">
+			<div class="dialog-heading">
+				<div>
+					<p class="eyebrow">YEAR BY YEAR</p>
+					<h2 id="history-name">Attendance comparison</h2>
+				</div>
+				<button class="close-dialog" aria-label="Close comparison">×</button>
+			</div>
+			<div id="history-content"></div>
+		</dialog>
+		<dialog id="setup-dialog">
+			<div class="dialog-heading">
+				<h2>Administrator dashboard</h2>
+				<button class="close-dialog" aria-label="Close administrator information">×</button>
+			</div>
+			<p>
+				The protected Google administrator dashboard has not been connected yet. Public visitors
+				cannot edit records.
+			</p>
+			<p>The repository's setup guide explains how to connect it under your Google account.</p>
+			<a
+				class="button primary"
+				href="https://github.com/zaqxen/purok-attendance/blob/main/SETUP.md"
+				target="_blank"
+				rel="noopener noreferrer"
+				>Open setup guide ↗</a
+			>
+		</dialog>
+	</body>
+</html>

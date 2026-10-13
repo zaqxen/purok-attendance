@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<base target="_top" />
+		<title>Purok administrator</title>
+		<style>
+			:root {
+				font-family: system-ui, sans-serif;
+				color: #233e34;
+				background: #f5f4ed;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+			}
+			button,
+			input,
+			select,
+			textarea {
+				font: inherit;
+			}
+			button {
+				cursor: pointer;
+			}
+			button:disabled {
+				opacity: 0.5;
+				cursor: wait;
+			}
+			[hidden] {
+				display: none !important;
+			}
+			header {
+				padding: 22px 5%;
+				background: #fffef9;
+				border-bottom: 1px solid #dce3d6;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 15px;
+			}
+			header strong {
+				font:
+					25px Georgia,
+					serif;
+			}
+			header small {
+				display: block;
+				font: 10px system-ui;
+				letter-spacing: 1.5px;
+				margin-top: 7px;
+				color: #77816e;
+			}
+			main {
+				max-width: 1200px;
+				margin: 25px auto;
+				padding: 0 20px;
+			}
+			button,
+			.button {
+				border: 1px solid #d7dfcf;
+				background: #fffef9;
+				color: #233e34;
+				border-radius: 8px;
+				padding: 10px 15px;
+				text-decoration: none;
+				font-size: 12px;
+				font-weight: 600;
+			}
+			.primary {
+				background: #254b3d;
+				color: white;
+				border-color: #254b3d;
+			}
+			nav {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+				margin: 22px 0;
+			}
+			.active {
+				background: #254b3d;
+				color: white;
+			}
+			.panel {
+				padding: 24px;
+				border: 1px solid #dce3d6;
+				border-radius: 12px;
+				background: #fffef9;
+				margin-bottom: 18px;
+			}
+			h1,
+			h2 {
+				font-family: Georgia, serif;
+				font-weight: 400;
+			}
+			h1 {
+				font-size: 30px;
+				margin: 0 0 8px;
+			}
+			h2 {
+				font-size: 23px;
+				margin: 0 0 15px;
+			}
+			p,
+			small {
+				color: #6d7868;
+				line-height: 1.7;
+				font-size: 12px;
+			}
+			.toolbar {
+				display: flex;
+				gap: 15px;
+				align-items: end;
+				flex-wrap: wrap;
+				margin: 20px 0;
+			}
+			.field label,
+			label.field {
+				display: block;
+				font-size: 11px;
+				color: #67725e;
+			}
+			.field input,
+			.field select,
+			.field textarea {
+				display: block;
+				margin-top: 7px;
+				width: 100%;
+				padding: 10px;
+				border: 1px solid #d7dfcf;
+				border-radius: 7px;
+				color: #233e34;
+				background: white;
+			}
+			.fields {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 18px;
+			}
+			.wide {
+				grid-column: 1/-1;
+			}
+			.table-wrap {
+				overflow: auto;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 12px;
+			}
+			th {
+				text-align: left;
+				font-size: 10px;
+				color: #6d7868;
+				border-bottom: 1px solid #dce3d6;
+				padding: 12px 10px;
+			}
+			td {
+				padding: 13px 10px;
+				border-bottom: 1px solid #e8ece1;
+				vertical-align: top;
+			}
+			td input,
+			td select,
+			td textarea {
+				padding: 8px;
+				border: 1px solid #d7dfcf;
+				border-radius: 6px;
+				font: 11px system-ui;
+				width: 100%;
+				min-width: 110px;
+			}
+			td textarea {
+				min-width: 200px;
+				min-height: 45px;
+			}
+			td.name {
+				min-width: 160px;
+				font-weight: 600;
+			}
+			#message {
+				padding: 12px 18px;
+				background: #e6efdf;
+				border: 1px solid #c6d8b8;
+				border-radius: 9px;
+				font-size: 12px;
+				margin-bottom: 18px;
+				white-space: pre-wrap;
+			}
+			.error {
+				background: #fae9df !important;
+				border-color: #e2bca6 !important;
+				color: #913e2d;
+			}
+			.summary {
+				display: flex;
+				gap: 30px;
+				flex-wrap: wrap;
+				margin: 20px 0;
+			}
+			.summary b {
+				font-size: 25px;
+				display: block;
+			}
+			.summary span {
+				font-size: 11px;
+				color: #75806b;
+			}
+			dialog {
+				border: 1px solid #dce3d6;
+				border-radius: 13px;
+				width: calc(100% - 35px);
+				max-width: 700px;
+				padding: 25px;
+				background: #fffef9;
+				color: #233e34;
+			}
+			dialog::backdrop {
+				background: #203f3066;
+			}
+			.dialog-top {
+				display: flex;
+				justify-content: space-between;
+				gap: 15px;
+			}
+			.dialog-top button {
+				border: 0;
+				background: none;
+				font-size: 22px;
+				padding: 0 7px;
+			}
+			.actions {
+				display: flex;
+				gap: 10px;
+				justify-content: flex-end;
+				flex-wrap: wrap;
+				margin-top: 22px;
+			}
+			.badge {
+				background: #ecf0e6;
+				border-radius: 4px;
+				padding: 4px 8px;
+				font-size: 10px;
+			}
+			.muted {
+				color: #7b8472;
+			}
+			.sensitive {
+				border-left: 3px solid #a68a4a;
+				padding-left: 12px;
+			}
+			.busy {
+				opacity: 0.65;
+				pointer-events: none;
+			}
+			#import-preview select {
+				min-width: 170px;
+			}
+			code {
+				word-break: break-all;
+				font-size: 11px;
+			}
+			@media (max-width: 650px) {
+				header {
+					align-items: flex-start;
+				}
+				header strong {
+					font-size: 21px;
+				}
+				header .primary {
+					max-width: 130px;
+				}
+				.fields {
+					grid-template-columns: 1fr;
+				}
+				.wide {
+					grid-column: auto;
+				}
+				.panel {
+					padding: 18px;
+				}
+				.toolbar .field {
+					flex: 1;
+				}
+				td textarea {
+					min-width: 160px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div>
+				<strong>Purok 3 · Administrator</strong><small>PRIVATE RECORDS · ONLY YOUR ACCOUNT</small>
+			</div>
+			<button id="publish" class="primary" disabled>Publish saved records ↗</button>
+		</header>
+		<main>
+			<div id="message" role="status">Loading your private records…</div>
+			<section id="onboarding" class="panel" hidden>
+				<h1>Connect your private records</h1>
+				<p>
+					Create a new private Google workbook for the application. Your original workbook remains
+					untouched.
+				</p>
+				<button id="initialize" class="primary">Create private data workbook</button>
+			</section>
+			<div id="application" hidden>
+				<div class="summary">
+					<div><b id="count-members">0</b><span>Private member profiles</span></div>
+					<div><b id="count-attendance">0</b><span>Attendance records</span></div>
+					<div><b id="last-published">Not yet</b><span>Last publication</span></div>
+				</div>
+				<nav aria-label="Administrator sections">
+					<button data-view="attendance" class="active">Attendance</button
+					><button data-view="members">Members &amp; transfers</button
+					><button data-view="doctrine">Doktrina</button
+					><button data-view="setup">Setup &amp; import</button>
+				</nav>
+				<section id="attendance-view" class="panel">
+					<h2>Update a week's attendance</h2>
+					<p>
+						Choose the day attended. Leave it blank for absence. Save the batch, then publish when
+						you finish. Public explanations and private notes are separate.
+					</p>
+					<div class="toolbar">
+						<div class="field">
+							<label for="year">Year</label
+							><select id="year"></select>
+						</div>
+						<div class="field">
+							<label for="week">Week</label
+							><select id="week"></select>
+						</div>
+						<button id="save-attendance" class="primary">Save attendance</button
+						><button id="save-publish">Save &amp; publish</button>
+					</div>
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Member</th>
+									<th>Day attended</th>
+									<th>Public absence explanation</th>
+									<th>Private note</th>
+								</tr>
+							</thead>
+							<tbody id="attendance-rows"></tbody>
+						</table>
+					</div>
+					<p id="attendance-note"></p>
+				</section>
+				<section id="members-view" class="panel" hidden>
+					<div class="toolbar">
+						<h2>Members &amp; monitoring periods</h2>
+						<button id="add-member" class="primary">Add a member</button>
+					</div>
+					<p class="sensitive">
+						Birthdates, mobile numbers, addresses, gender and Kap are private. A transfer ends
+						monitoring without deleting historical attendance.
+					</p>
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Kap / gender</th>
+									<th>Private contact</th>
+									<th>Monitoring periods</th>
+									<th>Manage</th>
+								</tr>
+							</thead>
+							<tbody id="member-rows"></tbody>
+						</table>
+					</div>
+				</section>
+				<section id="doctrine-view" class="panel" hidden>
+					<div class="toolbar">
+						<h2>Doktrina · private</h2>
+						<button id="add-doctrine" class="primary">Add Doktrina record</button>
+					</div>
+					<p>Each invited person is linked to the inviting member's permanent ID.</p>
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Invited by</th>
+									<th>Status</th>
+									<th>Manage</th>
+								</tr>
+							</thead>
+							<tbody id="doctrine-rows"></tbody>
+						</table>
+					</div>
+				</section>
+				<section id="setup-view" hidden>
+					<article class="panel">
+						<h2>Connect GitHub publishing</h2>
+						<p>
+							Use a fine-grained token limited to <b>zaqxen/purok-attendance</b>, with Contents
+							read/write. Its value is stored only in your private Google script properties and is
+							never returned to the browser.
+						</p>
+						<form id="publishing-form" class="fields">
+							<div class="field wide">
+								<label for="github-token">Repository-scoped token</label
+								><input id="github-token" type="password" autocomplete="new-password" required />
+							</div>
+							<div class="field wide">
+								<label for="admin-url">Your deployed Google administrator URL (/exec)</label
+								><input
+									id="admin-url"
+									type="url"
+									placeholder="https://script.google.com/macros/s/…/exec"
+									required
+								/>
+							</div>
+							<div class="wide">
+								<button class="primary">Save publishing connection</button>
+								<span id="connection-status" class="muted"></span>
+							</div>
+						</form>
+						<p>
+							Publication puts only approved public attendance fields into GitHub. Public files and
+							their repository history can be read by anyone.
+						</p>
+					</article>
+					<article class="panel">
+						<h2>Import the existing workbook once</h2>
+						<p>
+							Import into an empty application workbook. Review name matches and legacy markers
+							first. <b>1</b> and <b>X</b> are excluded monitoring weeks. Existing cell notes are
+							imported as private notes.
+						</p>
+						<div class="toolbar">
+							<div class="field" style="flex: 1">
+								<label for="legacy-source">Original Google Sheet URL or ID</label
+								><input id="legacy-source" placeholder="Paste your original spreadsheet link" />
+							</div>
+							<button id="preview-import">Review import</button>
+						</div>
+						<div id="import-preview" hidden></div>
+					</article>
+				</section>
+			</div>
+		</main>
+		<dialog id="member-dialog">
+			<form id="member-form">
+				<div class="dialog-top">
+					<h2 id="member-title">Add member</h2>
+					<button type="button" data-close>×</button>
+				</div>
+				<input id="member-id" type="hidden" />
+				<div class="fields">
+					<div class="field">
+						<label for="firstName">First name</label
+						><input id="firstName" required maxlength="100" />
+					</div>
+					<div class="field">
+						<label for="lastName">Last name</label><input id="lastName" required maxlength="100" />
+					</div>
+					<div class="field">
+						<label for="birthDate">Birthdate · private</label><input id="birthDate" type="date" />
+					</div>
+					<div class="field">
+						<label for="mobile">Mobile · private</label><input id="mobile" maxlength="100" />
+					</div>
+					<div class="field wide">
+						<label for="address">Address · private</label
+						><textarea id="address" maxlength="500"></textarea>
+					</div>
+					<div class="field">
+						<label for="gender">Tauhin · gender</label
+						><select id="gender">
+							<option value="">Unspecified</option>
+							<option value="B">B · Babae</option>
+							<option value="L">L · Lalake</option>
+						</select>
+					</div>
+					<div class="field">
+						<label for="kap">Kap</label
+						><input id="kap" list="kap-list" maxlength="30" required /><datalist id="kap-list">
+							<option value="K"></option>
+							<option value="B"></option>
+							<option value="HDB"></option>
+						</datalist>
+					</div>
+					<div class="field">
+						<label for="status">Private status</label><input id="status" maxlength="100" />
+					</div>
+					<div class="field">
+						<label for="member-year">Monitoring / classification effective year</label
+						><input id="member-year" type="number" min="2000" max="2099" required />
+					</div>
+					<div class="field">
+						<label for="member-week">First monitored week / classification effective week</label
+						><input id="member-week" type="number" min="1" max="53" required />
+					</div>
+				</div>
+				<p>
+					Only Kap K or B starts monitoring. Classification changes take effect from the selected
+					week and retain earlier history.
+				</p>
+				<div class="actions">
+					<button type="button" data-close>Cancel</button
+					><button class="primary">Save member</button>
+				</div>
+			</form>
+		</dialog>
+		<dialog id="transfer-dialog">
+			<form id="transfer-form">
+				<div class="dialog-top">
+					<h2 id="transfer-title">Record transfer</h2>
+					<button type="button" data-close>×</button>
+				</div>
+				<input id="transfer-member" type="hidden" />
+				<div class="fields">
+					<div class="field">
+						<label for="transfer-type">Transfer</label
+						><select id="transfer-type">
+							<option value="in">Transfer in</option>
+							<option value="out">Transfer out</option>
+						</select>
+					</div>
+					<div class="field">
+						<label for="transfer-year">Reporting year</label
+						><input id="transfer-year" type="number" min="2000" max="2099" required />
+					</div>
+					<div class="field">
+						<label for="transfer-week">Effective week</label
+						><input id="transfer-week" type="number" min="1" max="53" required />
+					</div>
+				</div>
+				<p>
+					The arrival week is included; the departure week is excluded. The member and historical
+					attendance remain stored.
+				</p>
+				<div class="actions">
+					<button type="button" data-close>Cancel</button
+					><button class="primary">Save transfer</button>
+				</div>
+			</form>
+		</dialog>
+		<dialog id="doctrine-dialog">
+			<form id="doctrine-form">
+				<div class="dialog-top">
+					<h2>Doktrina record · private</h2>
+					<button type="button" data-close>×</button>
+				</div>
+				<input id="doctrine-id" type="hidden" />
+				<div class="fields">
+					<div class="field wide">
+						<label for="doctrine-name">Name</label
+						><input id="doctrine-name" required maxlength="200" />
+					</div>
+					<div class="field">
+						<label for="inviterId">Inviting member</label
+						><select id="inviterId" required></select>
+					</div>
+					<div class="field">
+						<label for="caretaker">Tagapag-alaga</label><input id="caretaker" maxlength="200" />
+					</div>
+					<div class="field">
+						<label for="doctrine-mobile">Mobile</label
+						><input id="doctrine-mobile" maxlength="100" />
+					</div>
+					<div class="field">
+						<label for="doctrine-status">Status</label
+						><input id="doctrine-status" maxlength="100" />
+					</div>
+					<div class="field wide">
+						<label for="doctrine-notes">Private notes</label
+						><textarea id="doctrine-notes" maxlength="1500"></textarea>
+					</div>
+				</div>
+				<div class="actions">
+					<button type="button" data-close>Cancel</button
+					><button class="primary">Save record</button>
+				</div>
+			</form>
+		</dialog>
+		<dialog id="period-dialog">
+			<form id="period-form">
+				<div class="dialog-top">
+					<h2>Correct a monitoring period</h2>
+					<button type="button" data-close>×</button>
+				</div>
+				<input id="period-id" type="hidden" />
+				<div class="fields">
+					<div class="field">
+						<label for="period-start">Arrival week · Tuesday</label
+						><input id="period-start" type="date" required />
+					</div>
+					<div class="field">
+						<label for="period-end">Departure week · Tuesday, or leave blank</label
+						><input id="period-end" type="date" />
+					</div>
+				</div>
+				<p>
+					Arrival counts; departure is excluded. Attendance records are retained, but records
+					outside the corrected period are excluded from public reports.
+				</p>
+				<div class="actions">
+					<button type="button" data-close>Cancel</button
+					><button class="primary">Save correction</button>
+				</div>
+			</form>
+		</dialog>
+		<script>
+			const $ = (id) => document.getElementById(id);
+			const esc = (value) =>
+				String(value ?? '').replace(
+					/[&<>"']/g,
+					(c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+				);
+			let state,
+				plan,
+				dirty = false,
+				renderedYear,
+				renderedWeek;
+			function message(text, error = false) {
+				$('message').textContent = text;
+				$('message').classList.toggle('error', error);
+			}
+			function call(name, ...args) {
+				return new Promise((resolve, reject) =>
+					google.script.run
+						.withSuccessHandler(resolve)
+						.withFailureHandler(reject)
+						[name](...args)
+				);
+			}
+			async function busy(operation) {
+				document.body.classList.add('busy');
+				try {
+					return await operation();
+				} catch (error) {
+					message(error.message || String(error), true);
+					throw error;
+				} finally {
+					document.body.classList.remove('busy');
+				}
+			}
+			function today() {
+				return new Intl.DateTimeFormat('en-CA', {
+					timeZone: 'Asia/Dubai',
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit'
+				}).format(new Date());
+			}
+			// The calendar below is generated from the shared source during preparation.
+			/* Shared by the private Google publisher and the public attendance calendar. */
+var Attendance = (function () {
+	'use strict';
+	var DAYS = ['Tue', 'Fri', 'Sat', 'Sun', 'Recorded'];
+	var DAY_MS = 86400000;
+	function date(value) {
+		if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value))
+			throw new Error('Use a date in YYYY-MM-DD format.');
+		var result = new Date(value + 'T00:00:00Z');
+		if (!Number.isFinite(result.getTime()) || result.toISOString().slice(0, 10) !== value)
+			throw new Error('Invalid date.');
+		return result;
+	}
+	function iso(value) {
+		return value.toISOString().slice(0, 10);
+	}
+	function addDays(value, days) {
+		return iso(new Date(date(value).getTime() + days * DAY_MS));
+	}
+	function firstWeek(year) {
+		if (!Number.isInteger(year) || year < 1999 || year > 2101)
+			throw new Error('Year is outside the supported calendar.');
+		var first = new Date(Date.UTC(year, 0, 1));
+		return iso(new Date(first.getTime() + (2 - first.getUTCDay()) * DAY_MS));
+	}
+	function weeks(year) {
+		var start = firstWeek(year);
+		var count = Math.round((date(firstWeek(year + 1)) - date(start)) / DAY_MS / 7);
+		return Array.from({ length: count }, function (_, i) {
+			var from = addDays(start, i * 7);
+			return { number: i + 1, start: from, end: addDays(from, 5) };
+		});
+	}
+	function reportYear(today) {
+		var year = date(today).getUTCFullYear();
+		if (today >= firstWeek(year + 1)) return year + 1;
+		if (today < firstWeek(year)) return year - 1;
+		return year;
+	}
+	function completedThrough(year, today) {
+		date(today);
+		return weeks(year).filter(function (week) {
+			return today > week.end;
+		}).length;
+	}
+	function weekStart(year, number) {
+		var list = weeks(year);
+		if (!Number.isInteger(number) || number < 1 || number > list.length)
+			throw new Error('Invalid monitoring week.');
+		return list[number - 1].start;
+	}
+	function isEligible(periods, memberId, start) {
+		return periods.some(function (p) {
+			return p.memberId === memberId && p.start <= start && (!p.end || start < p.end);
+		});
+	}
+	function validatePeriod(period, periods) {
+		if (date(period.start).getUTCDay() !== 2) throw new Error('Monitoring starts on a Tuesday.');
+		if (period.end && (date(period.end).getUTCDay() !== 2 || period.end <= period.start))
+			throw new Error('Departure must be a later monitoring week.');
+		if (
+			periods.some(function (p) {
+				return (
+					p.id !== period.id &&
+					p.memberId === period.memberId &&
+					period.start < (p.end || '9999-12-31') &&
+					p.start < (period.end || '9999-12-31')
+				);
+			})
+		)
+			throw new Error('Monitoring periods cannot overlap.');
+	}
+	function snapshot(state, year, today, version) {
+		var calendar = weeks(year);
+		var through = completedThrough(year, today);
+		var members = state.members
+			.filter(function (member) {
+				return calendar.some(function (week) {
+					return isEligible(state.periods, member.id, week.start);
+				});
+			})
+			.map(function (member) {
+				return {
+					id: member.id,
+					name: [member.firstName, member.lastName].filter(Boolean).join(' ')
+				};
+			});
+		var ids = new Set(
+			members.map(function (member) {
+				return member.id;
+			})
+		);
+		var periods = state.periods
+			.filter(function (p) {
+				return (
+					ids.has(p.memberId) &&
+					p.start < firstWeek(year + 1) &&
+					(!p.end || p.end > calendar[0].start)
+				);
+			})
+			.map(function (p) {
+				return { memberId: p.memberId, start: p.start, end: p.end || '' };
+			});
+		var entries = state.entries
+			.filter(function (entry) {
+				return entry.year === year && ids.has(entry.memberId);
+			})
+			.map(function (entry) {
+				if (
+					!Number.isInteger(entry.week) ||
+					entry.week < 1 ||
+					entry.week > calendar.length ||
+					(entry.day && DAYS.indexOf(entry.day) === -1)
+				)
+					throw new Error('Invalid attendance record.');
+				return {
+					memberId: entry.memberId,
+					week: entry.week,
+					day: entry.day || '',
+					reason: entry.publicReason || ''
+				};
+			})
+			.filter(function (entry) {
+				return isEligible(periods, entry.memberId, calendar[entry.week - 1].start);
+			});
+		var lookup = new Map();
+		entries.forEach(function (entry) {
+			var key = entry.memberId + ':' + entry.week;
+			if (lookup.has(key)) throw new Error('Duplicate attendance record.');
+			lookup.set(key, entry);
+		});
+		var weekly = calendar.map(function (week) {
+			if (week.number > through)
+				return { week: week.number, eligible: 0, present: 0, absent: 0, absencePercent: null };
+			var eligible = 0,
+				present = 0;
+			members.forEach(function (member) {
+				if (!isEligible(periods, member.id, week.start)) return;
+				eligible++;
+				if ((lookup.get(member.id + ':' + week.number) || {}).day) present++;
+			});
+			return {
+				week: week.number,
+				eligible: eligible,
+				present: present,
+				absent: eligible - present,
+				absencePercent: eligible ? ((eligible - present) / eligible) * 100 : null
+			};
+		});
+		var annual = members.map(function (member) {
+			var monitored = 0,
+				attended = 0;
+			calendar.slice(0, through).forEach(function (week) {
+				if (!isEligible(periods, member.id, week.start)) return;
+				monitored++;
+				if ((lookup.get(member.id + ':' + week.number) || {}).day) attended++;
+			});
+			return {
+				memberId: member.id,
+				monitored: monitored,
+				attended: attended,
+				absent: monitored - attended,
+				percent: monitored ? (attended / monitored) * 100 : null
+			};
+		});
+		var possible = weekly.reduce(function (sum, week) {
+			return sum + week.eligible;
+		}, 0);
+		var present = weekly.reduce(function (sum, week) {
+			return sum + week.present;
+		}, 0);
+		return {
+			schemaVersion: 1,
+			year: year,
+			version: version,
+			asOf: today,
+			throughWeek: through,
+			members: members,
+			periods: periods,
+			entries: entries,
+			weekly: weekly,
+			annual: annual,
+			overall: {
+				monitored: possible,
+				attended: present,
+				absent: possible - present,
+				percent: possible ? (present / possible) * 100 : null
+			}
+		};
+	}
+	return {
+		DAYS: DAYS,
+		date: date,
+		addDays: addDays,
+		firstWeek: firstWeek,
+		weeks: weeks,
+		reportYear: reportYear,
+		completedThrough: completedThrough,
+		weekStart: weekStart,
+		isEligible: isEligible,
+		validatePeriod: validatePeriod,
+		snapshot: snapshot
+	};
+})();
+if (typeof module !== 'undefined') module.exports = Attendance;
+
+			function currentWeek(year) {
+				return Math.max(
+					1,
+					Math.min(
+						Attendance.weeks(year).length,
+						Math.floor(
+							(Attendance.date(today()) - Attendance.date(Attendance.firstWeek(year))) /
+								86400000 /
+								7
+						) + 1
+					)
+				);
+			}
+			function setState(value) {
+				state = value;
+				if (state.setupRequired) {
+					$('onboarding').hidden = false;
+					$('application').hidden = true;
+					message('Create your new private workbook to begin.');
+					return;
+				}
+				$('onboarding').hidden = true;
+				$('application').hidden = false;
+				$('publish').disabled = false;
+				render();
+			}
+			function name(member) {
+				return member.firstName + ' ' + member.lastName;
+			}
+			function render() {
+				$('count-members').textContent = state.members.length;
+				$('count-attendance').textContent = state.entries.length;
+				$('last-published').textContent = state.publication.publishedAt
+					? new Date(state.publication.publishedAt).toLocaleDateString('en-GB')
+					: 'Not yet';
+				const prior = Number($('year').value),
+					current = Attendance.reportYear(today());
+				const periodYears = state.periods.flatMap((p) => {
+					const first = Attendance.reportYear(p.start),
+						last = p.end ? Attendance.reportYear(Attendance.addDays(p.end, -1)) : current;
+					return Array.from({ length: Math.max(0, last - first + 1) }, (_, i) => first + i);
+				});
+				const years = [
+					...new Set([current, ...state.entries.map((e) => e.year), ...periodYears])
+				].sort((a, b) => b - a);
+				$('year').innerHTML = years
+					.map((y) => '<option value="' + y + '">' + y + '</option>')
+					.join('');
+				$('year').value = years.includes(prior) ? prior : current;
+				const week = Number($('week').value);
+				$('week').innerHTML = Attendance.weeks(Number($('year').value))
+					.map(
+						(w) =>
+							'<option value="' +
+							w.number +
+							'">Week ' +
+							w.number +
+							' · ' +
+							w.start +
+							' to ' +
+							w.end +
+							'</option>'
+					)
+					.join('');
+				$('week').value = week || currentWeek(Number($('year').value));
+				renderAttendance();
+				$('member-rows').innerHTML =
+					state.members
+						.map(
+							(m) =>
+								'<tr><td class="name">' +
+								esc(name(m)) +
+								'<br><small>' +
+								esc(m.status) +
+								'</small></td><td>' +
+								esc(m.kap || 'Unspecified') +
+								' / ' +
+								esc(m.gender || '—') +
+								'</td><td>' +
+								esc(m.mobile) +
+								'<br><small>' +
+								esc(m.address) +
+								'</small></td><td>' +
+								state.periods
+									.filter((p) => p.memberId === m.id)
+									.map(
+										(p) => '<small>' + esc(p.start) + ' → ' + esc(p.end || 'ongoing') + '</small>'
+									)
+									.join('<br>') +
+								'</td><td><button data-edit-member="' +
+								esc(m.id) +
+								'">Edit</button> <button data-transfer="' +
+								esc(m.id) +
+								'">Transfer</button></td></tr>'
+						)
+						.join('') ||
+					'<tr><td colspan="5">Import your workbook or add your first member. Add yourself explicitly for attendance totals.</td></tr>';
+				$('doctrine-rows').innerHTML =
+					state.doctrine
+						.map(
+							(d) =>
+								'<tr><td>' +
+								esc(d.name) +
+								'</td><td>' +
+								esc(
+									name(
+										state.members.find((m) => m.id === d.inviterId) || {
+											firstName: 'Unknown',
+											lastName: ''
+										}
+									)
+								) +
+								'</td><td>' +
+								esc(d.status) +
+								'</td><td><button data-edit-doctrine="' +
+								esc(d.id) +
+								'">Edit</button></td></tr>'
+						)
+						.join('') || '<tr><td colspan="4">No Doktrina records yet.</td></tr>';
+				$('connection-status').textContent = state.configuredPublishing
+					? 'Publishing connection configured.'
+					: 'Not connected yet.';
+				document.querySelectorAll('#member-rows tr').forEach((row, index) => {
+					const member = state.members[index];
+					if (!member) return;
+					row.cells[3].innerHTML = state.periods
+						.filter((p) => p.memberId === member.id)
+						.map(
+							(p) =>
+								'<div><small>' +
+								esc(p.start) +
+								' → ' +
+								esc(p.end || 'ongoing') +
+								'</small> <button data-edit-period="' +
+								esc(p.id) +
+								'">Correct</button></div>'
+						)
+						.join('');
+				});
+			}
+			function renderAttendance() {
+				const year = Number($('year').value),
+					week = Number($('week').value),
+					start = Attendance.weekStart(year, week);
+				renderedYear = year;
+				renderedWeek = week;
+				const eligible = state.members.filter((m) =>
+					Attendance.isEligible(state.periods, m.id, start)
+				);
+				$('attendance-rows').innerHTML =
+					eligible
+						.map((m) => {
+							const e =
+								state.entries.find(
+									(e) => e.memberId === m.id && e.year === year && e.week === week
+								) || {};
+							return (
+								'<tr data-attendee="' +
+								esc(m.id) +
+								'"><td class="name">' +
+								esc(name(m)) +
+								'</td><td><select data-field="day"><option value="">Blank · absent</option>' +
+								Attendance.DAYS.map(
+									(d) =>
+										'<option value="' +
+										d +
+										'" ' +
+										(e.day === d ? 'selected' : '') +
+										'>' +
+										d +
+										'</option>'
+								).join('') +
+								'</select></td><td><textarea data-field="publicReason" maxlength="500" placeholder="Visible to anyone viewing the website">' +
+								esc(e.publicReason || '') +
+								'</textarea></td><td><textarea data-field="privateNote" maxlength="1500" placeholder="Only you can see this">' +
+								esc(e.privateNote || '') +
+								'</textarea></td></tr>'
+							);
+						})
+						.join('') || '<tr><td colspan="4">No members monitored this week.</td></tr>';
+				$('attendance-note').textContent =
+					week > Attendance.completedThrough(year, today())
+						? 'This week is open or in the future. Blank cells will not enter absence percentages until a publication after the week finishes.'
+						: eligible.length +
+							' monitored members. Your own attendance should be represented by your member row.';
+			}
+			function canLeave() {
+				if (!dirty) return true;
+				if (!confirm('Discard the unsaved attendance changes?')) return false;
+				dirty = false;
+				renderAttendance();
+				return true;
+			}
+			async function saveBatch(publish) {
+				await busy(async () => {
+					const changes = [...document.querySelectorAll('[data-attendee]')].map((row) => ({
+						memberId: row.dataset.attendee,
+						day: row.querySelector('[data-field="day"]').value,
+						publicReason: row.querySelector('[data-field="publicReason"]').value,
+						privateNote: row.querySelector('[data-field="privateNote"]').value
+					}));
+					setState(
+						await call('saveAttendance', {
+							revision: state.revision,
+							year: Number($('year').value),
+							week: Number($('week').value),
+							changes
+						})
+					);
+					dirty = false;
+					message('Attendance saved privately.');
+					if (publish) await publishSaved();
+				});
+			}
+			async function publishSaved() {
+				const result = await call('publishReports', state.revision);
+				setState(result.state);
+				message(result.message);
+			}
+			$('initialize').onclick = () =>
+				busy(async () => {
+					setState(await call('initializeWorkbook'));
+					message(
+						'Private workbook created. Import your original records in Setup, or add members.'
+					);
+				}).catch(() => {});
+			$('save-attendance').onclick = () => saveBatch(false).catch(() => {});
+			$('save-publish').onclick = () => saveBatch(true).catch(() => {});
+			$('publish').onclick = () => {
+				if (dirty) {
+					message('Save the unsaved attendance changes before publishing.', true);
+					return;
+				}
+				busy(publishSaved).catch(() => {});
+			};
+			$('attendance-rows').oninput = () => {
+				dirty = true;
+			};
+			$('attendance-rows').onchange = () => {
+				dirty = true;
+			};
+			$('year').onchange = () => {
+				const next = $('year').value;
+				$('year').value = renderedYear;
+				if (canLeave()) {
+					$('year').value = next;
+					$('week').value = '';
+					render();
+				}
+			};
+			$('week').onchange = () => {
+				const next = $('week').value;
+				$('week').value = renderedWeek;
+				if (canLeave()) {
+					$('week').value = next;
+					renderAttendance();
+				}
+			};
+			document.querySelectorAll('[data-view]').forEach(
+				(button) =>
+					(button.onclick = () => {
+						if (!canLeave()) return;
+						document
+							.querySelectorAll('[data-view]')
+							.forEach((b) => b.classList.toggle('active', b === button));
+						for (const v of ['attendance', 'members', 'doctrine', 'setup'])
+							$(v + '-view').hidden = v !== button.dataset.view;
+					})
+			);
+			function memberDialog(id) {
+				if (!canLeave()) return;
+				const m = state.members.find((m) => m.id === id) || {};
+				$('member-title').textContent = id ? 'Edit member' : 'Add member';
+				$('member-id').value = id || '';
+				for (const field of [
+					'firstName',
+					'lastName',
+					'birthDate',
+					'mobile',
+					'address',
+					'gender',
+					'kap',
+					'status'
+				])
+					$(field).value = m[field] || '';
+				$('member-year').value = Number($('year').value);
+				$('member-week').value = Number($('week').value);
+				$('member-dialog').showModal();
+			}
+			$('add-member').onclick = () => memberDialog('');
+			$('member-form').onsubmit = (event) => {
+				event.preventDefault();
+				busy(async () => {
+					const member = { id: $('member-id').value };
+					for (const field of [
+						'firstName',
+						'lastName',
+						'birthDate',
+						'mobile',
+						'address',
+						'gender',
+						'kap',
+						'status'
+					])
+						member[field] = $(field).value;
+					setState(
+						await call('saveMember', {
+							revision: state.revision,
+							member,
+							year: Number($('member-year').value),
+							week: Number($('member-week').value)
+						})
+					);
+					$('member-dialog').close();
+					message('Member saved. Publish when your updates are ready.');
+				}).catch(() => {});
+			};
+			$('transfer-form').onsubmit = (event) => {
+				event.preventDefault();
+				busy(async () => {
+					setState(
+						await call('saveTransfer', {
+							revision: state.revision,
+							memberId: $('transfer-member').value,
+							type: $('transfer-type').value,
+							year: Number($('transfer-year').value),
+							week: Number($('transfer-week').value)
+						})
+					);
+					$('transfer-dialog').close();
+					message(
+						'Transfer saved. Historical attendance retained. Publish to update the public reports.'
+					);
+				}).catch(() => {});
+			};
+			function doctrineDialog(id) {
+				if (!canLeave()) return;
+				const d = state.doctrine.find((d) => d.id === id) || {};
+				$('doctrine-id').value = id || '';
+				$('doctrine-name').value = d.name || '';
+				$('inviterId').innerHTML = state.members
+					.map((m) => '<option value="' + esc(m.id) + '">' + esc(name(m)) + '</option>')
+					.join('');
+				if (d.inviterId) $('inviterId').value = d.inviterId;
+				for (const field of ['caretaker', 'doctrine-mobile', 'doctrine-status', 'doctrine-notes'])
+					$(field).value =
+						d[
+							{
+								caretaker: 'caretaker',
+								'doctrine-mobile': 'mobile',
+								'doctrine-status': 'status',
+								'doctrine-notes': 'notes'
+							}[field]
+						] || '';
+				$('doctrine-dialog').showModal();
+			}
+			$('add-doctrine').onclick = () => doctrineDialog('');
+			$('period-form').onsubmit = (event) => {
+				event.preventDefault();
+				busy(async () => {
+					setState(
+						await call('savePeriod', {
+							revision: state.revision,
+							id: $('period-id').value,
+							start: $('period-start').value,
+							end: $('period-end').value
+						})
+					);
+					$('period-dialog').close();
+					message('Monitoring dates corrected. Publish to update reports.');
+				}).catch(() => {});
+			};
+			document.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-edit-period]');
+				if (!button || !canLeave()) return;
+				const period = state.periods.find((p) => p.id === button.dataset.editPeriod);
+				$('period-id').value = period.id;
+				$('period-start').value = period.start;
+				$('period-end').value = period.end;
+				$('period-dialog').showModal();
+			});
+			$('doctrine-form').onsubmit = (event) => {
+				event.preventDefault();
+				busy(async () => {
+					setState(
+						await call('saveDoctrine', {
+							revision: state.revision,
+							record: {
+								id: $('doctrine-id').value,
+								name: $('doctrine-name').value,
+								inviterId: $('inviterId').value,
+								caretaker: $('caretaker').value,
+								mobile: $('doctrine-mobile').value,
+								status: $('doctrine-status').value,
+								notes: $('doctrine-notes').value
+							}
+						})
+					);
+					$('doctrine-dialog').close();
+					message('Private Doktrina record saved.');
+				}).catch(() => {});
+			};
+			document.addEventListener('click', (event) => {
+				const close = event.target.closest('[data-close]');
+				if (close) close.closest('dialog').close();
+				const edit = event.target.closest('[data-edit-member]');
+				if (edit) memberDialog(edit.dataset.editMember);
+				const transfer = event.target.closest('[data-transfer]');
+				if (transfer && canLeave()) {
+					$('transfer-member').value = transfer.dataset.transfer;
+					$('transfer-title').textContent =
+						'Transfer · ' + name(state.members.find((m) => m.id === transfer.dataset.transfer));
+					$('transfer-year').value = Number($('year').value);
+					$('transfer-week').value = Number($('week').value);
+					$('transfer-dialog').showModal();
+				}
+				const doctrine = event.target.closest('[data-edit-doctrine]');
+				if (doctrine) doctrineDialog(doctrine.dataset.editDoctrine);
+			});
+			$('publishing-form').onsubmit = (event) => {
+				event.preventDefault();
+				busy(async () => {
+					await call('configurePublishing', {
+						token: $('github-token').value,
+						adminUrl: $('admin-url').value
+					});
+					$('github-token').value = '';
+					state.configuredPublishing = true;
+					$('connection-status').textContent = 'Publishing connection configured.';
+					message('Publishing connected. The token is stored privately in Google.');
+				}).catch(() => {});
+			};
+			$('preview-import').onclick = () =>
+				busy(async () => {
+					if (state.members.length) {
+						throw new Error(
+							'Import requires an empty application workbook. Existing records will not be overwritten.'
+						);
+					}
+					plan = await call('previewLegacyImport', $('legacy-source').value);
+					const options = (selected) =>
+						plan.members
+							.map(
+								(m) =>
+									'<option value="' +
+									esc(m.id) +
+									'" ' +
+									(m.id === selected ? 'selected' : '') +
+									'>' +
+									esc(name(m)) +
+									'</option>'
+							)
+							.join('');
+					let html =
+						'<h2>Review before importing</h2><p>' +
+						plan.members.length +
+						' proposed profiles; ' +
+						plan.candidates.length +
+						' annual attendance rows. Match spelling variants to the same person. Historical-only profiles have no guessed birthdate, phone, gender or Kap.</p><div class="table-wrap"><table><thead><tr><th>Source attendance row</th><th>Matching member</th></tr></thead><tbody>' +
+						plan.candidates
+							.map(
+								(c) =>
+									'<tr><td>' +
+									c.year +
+									' · ' +
+									esc(c.name) +
+									'</td><td><select data-import-key="' +
+									esc(c.key) +
+									'">' +
+									options(c.memberId) +
+									'</select></td></tr>'
+							)
+							.join('') +
+						'</tbody></table></div>';
+					if (plan.markers.length)
+						html +=
+							'<h3>Interpret other legacy markers</h3><p>1 and X already mean outside monitoring. Decide how the following markers should count.</p>' +
+							plan.markers
+								.map(
+									(marker) =>
+										'<div class="toolbar"><label>' +
+										esc(marker) +
+										' <select data-marker="' +
+										esc(marker) +
+										'"><option value="">Choose meaning…</option><option value="Recorded">Attended · day unknown</option><option value="Absent">Absent</option><option value="Outside">Outside monitoring</option></select></label></div>'
+								)
+								.join('');
+					if (plan.doctrine.length)
+						html +=
+							'<h3>Doktrina inviters</h3>' +
+							plan.doctrine
+								.map(
+									(d, i) =>
+										'<div class="toolbar"><label>' +
+										esc(d.name) +
+										' · source inviter ' +
+										esc(d.inviter) +
+										' <select data-inviter="' +
+										i +
+										'"><option value="">Choose member…</option>' +
+										options('') +
+										'</select></label></div>'
+								)
+								.join('');
+					html +=
+						'<p>The old chart’s +1 is not fabricated as attendance. Add yourself and enter the attendance history you can confirm. Original records remain unchanged.</p><button id="apply-import" class="primary">Import reviewed records privately</button>';
+					$('import-preview').innerHTML = html;
+					$('import-preview').hidden = false;
+					$('apply-import').onclick = () =>
+						busy(async () => {
+							const assignments = {},
+								markerChoices = {},
+								inviterAssignments = {};
+							document
+								.querySelectorAll('[data-import-key]')
+								.forEach((s) => (assignments[s.dataset.importKey] = s.value));
+							document
+								.querySelectorAll('[data-marker]')
+								.forEach((s) => (markerChoices[s.dataset.marker] = s.value));
+							document
+								.querySelectorAll('[data-inviter]')
+								.forEach((s) => (inviterAssignments[s.dataset.inviter] = s.value));
+							setState(
+								await call('importLegacy', {
+									revision: state.revision,
+									plan,
+									assignments,
+									markerChoices,
+									inviterAssignments
+								})
+							);
+							$('import-preview').hidden = true;
+							plan = null;
+							message(
+								'Records imported privately. Review the roster, add your own attendance, then publish. No real records have been put in GitHub yet.'
+							);
+						}).catch(() => {});
+				}).catch(() => {});
+			window.addEventListener('beforeunload', (event) => {
+				if (dirty) {
+					event.preventDefault();
+					event.returnValue = '';
+				}
+			});
+			busy(async () => {
+				setState(await call('getAdminState'));
+				message(
+					state.setupRequired
+						? 'Create the private application workbook to begin.'
+						: 'Private records loaded. Your edits become public only after publishing.'
+				);
+			}).catch(() => {});
+		</script>
+	</body>
+</html>
