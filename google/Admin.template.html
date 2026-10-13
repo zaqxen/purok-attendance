@@ -434,7 +434,8 @@
 						<h2>Import the existing workbook once</h2>
 						<p>
 							Import into an empty application workbook. Review name matches and legacy markers
-							first. <b>1</b> and <b>X</b> are excluded monitoring weeks. Existing cell notes are
+							first. <b>X</b> and pre-arrival/post-transfer <b>1</b> weeks are excluded. A
+							<b>1</b> between actual attendances counts as present. Existing cell notes are
 							imported as private notes.
 						</p>
 						<div class="toolbar">
@@ -1132,7 +1133,7 @@
 						'</tbody></table></div>';
 					if (plan.markers.length)
 						html +=
-							'<h3>Interpret other legacy markers</h3><p>1 and X already mean outside monitoring. Decide how the following markers should count.</p>' +
+							'<h3>Interpret other legacy markers</h3><p>X and pre-arrival/post-transfer 1 weeks are outside monitoring. Intermediate 1 markers count as present. Decide how the following markers should count.</p>' +
 							plan.markers
 								.map(
 									(marker) =>
@@ -1140,7 +1141,7 @@
 										esc(marker) +
 										' <select data-marker="' +
 										esc(marker) +
-										'"><option value="">Choose meaning…</option><option value="Recorded">Attended · day unknown</option><option value="Absent">Absent</option><option value="Outside">Outside monitoring</option></select></label></div>'
+										'"><option value="">Choose meaning…</option><option value="Recorded">Attended · day unknown</option><option value="Tue">Attended · Tuesday</option><option value="Fri">Attended · Friday</option><option value="Sat">Attended · Saturday</option><option value="Sun">Attended · Sunday</option><option value="Absent">Absent</option><option value="Outside">Outside monitoring</option></select></label></div>'
 								)
 								.join('');
 					if (plan.doctrine.length)

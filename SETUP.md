@@ -1,6 +1,6 @@
 # Connect the private administrator dashboard
 
-The website initially shows fictional records. Complete this setup once, using the Google account that will administer attendance. Do not paste passwords or tokens into GitHub, this guide, or chat.
+The website now shows imported attendance for 2024–2026. Complete this setup once to activate private administration using your chosen Google account. Do not paste passwords or tokens into GitHub, this guide, or chat.
 
 ## 1. Create your Google application
 
@@ -24,7 +24,7 @@ If Google does not offer the stated access setting for your account, stop before
 1. Set the original workbook's sharing to **Restricted**. The script owner can still read it.
 2. In Setup & import, paste the original spreadsheet URL and choose **Review import**. Import requires an empty application workbook.
 3. Review every attendance name match across 2024–2026, especially abbreviated or historical-only names. Match spelling variants to one member. Review unknown attendance markers and every Doktrina inviter.
-4. The old `1` and `X` markers become excluded weeks. Actual days become attendance. Source cell notes become private notes. Missing date headers are not guessed. Some historical demographics or day details cannot be recovered from the old data.
+4. Pre-arrival/post-transfer `1` placeholders and `X` become excluded weeks. Intermediate `1` markers between actual attendances count as present. Choose **Outside monitoring** for `.` and **Saturday** for `S - Link`. Missing date headers are not guessed. The importer preserves the member IDs and public cell explanations already published on this website. Newly found source cell notes remain private.
 5. Click **Import reviewed records privately**. Review the monitoring periods and correct their dates where needed. The original workbook remains unchanged.
 6. Add your own member row with Kap K or B and the correct first monitored week. Record only the historical attendance you can confirm; the old formula's `+1` is not invented as history. Members with no legacy attendance row also need a confirmed first monitoring week.
 7. Review what will be public: names, attendance, monitoring dates, totals and public explanations. Contact details, birthdays, gender, Kap, Doktrina and private notes stay in Google. Anyone can see the published attendance, and GitHub retains earlier published versions in its history.

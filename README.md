@@ -4,7 +4,7 @@ A read-only attendance website hosted on GitHub Pages, with a private Google adm
 
 **[Open the website](https://zaqxen.github.io/purok-attendance/)** · **[Connect the private dashboard](SETUP.md)**
 
-The initial release contains clearly labelled fictional records for 2024–2026. No real member records, credentials, or source spreadsheet IDs are included.
+The website now contains attendance imported from the existing Google Sheet for 2024–2026, including cell explanations. Names, monitoring dates and attendance are intentionally public. Contact details, birthdays, private profiles, credentials and the source spreadsheet ID are not included in this repository.
 
 ## Daily use
 
@@ -20,7 +20,8 @@ In the dashboard, edit attendance, profiles, monitoring periods, transfers and D
 - A blank completed monitored week is absent. Outside-monitoring and open/future weeks are excluded from percentages.
 - Weekly absence is absent members divided by eligible members that week. Individual annual attendance is attended weeks divided by completed eligible weeks. Group annual attendance uses total attended member-weeks divided by total eligible member-weeks.
 - The administrator's attendance must have an explicit member row. No automatic `+1` is added.
-- Legacy `1` and `X` mean outside monitoring. The reviewed import retains old cell notes privately and requires decisions for unknown markers.
+- Leading/trailing legacy `1` placeholders and `X` mean outside monitoring. A `1` between actual attendances counts as present, including temporary transfers across a year boundary. In the imported data, `.` means outside monitoring and `S - Link` means Saturday attendance.
+- The administrator's own attendance was left out at their request, until entered explicitly. The 2024 source's week 13 has no date label, so monitoring starts no earlier than week 14.
 
 Current-year totals advance when you publish after a week closes. This deliberate publication cutoff keeps all viewers on the same saved report. The new year appears automatically; no sheet duplication is needed.
 
@@ -43,6 +44,6 @@ npm run preview
 
 `docs/` is the published site. `google/` is the private Apps Script application. `lib/attendance.js` is the shared calendar and report calculation. Run preparation after changing the Google source, calendar or `google/Admin.template.html`. For account setup, paste the generated `google/Purok.gs` as the project's only source file, plus appsscript.json. The separate source files are for development.
 
-`npm run demo` overwrites published report files with fictional data. Run it only during initial development, never after publishing real reports. Developing code must preserve `docs/data/` and the latest remote commits from the administrator.
+`npm run demo` refuses to overwrite real published reports. Generate fictional reports only in a separate development copy. Developing code must preserve `docs/data/` and the latest remote commits from the administrator.
 
 Tests cover calculations, authorization, concurrent-edit protection, transfer history, public export privacy, reviewed import, and publishing failure. Google authorization and live Sheet writes must also be verified after account setup.

@@ -47,6 +47,12 @@ function harness(initial) {
 		Session: { getActiveUser: () => ({ getEmail: () => email }) },
 		LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => released++ }) },
 		SpreadsheetApp: { openById: () => ({ getSheetByName: () => ({}) }) },
+		UrlFetchApp: {
+			fetch: () => ({
+				getResponseCode: () => 200,
+				getContentText: () => JSON.stringify({ schemaVersion: 1, demo: true, reports: [] })
+			})
+		},
 		Utilities: {
 			getUuid: () => 'uuid-' + ++serial,
 			formatDate: () => '2026-10-13',
@@ -254,7 +260,7 @@ test('publication exposes an allowlist only and a GitHub failure preserves saved
 		['docs/data/manifest.json']
 	);
 });
-test('reviewed legacy import excludes 1/X, keeps notes private, and refuses undecided markers', () => {
+test('reviewed legacy import excludes transfer placeholders/X, keeps notes private, and refuses undecided markers', () => {
 	const h = harness({
 		revision: 'r1',
 		members: [],
@@ -299,6 +305,171 @@ test('reviewed legacy import excludes 1/X, keeps notes private, and refuses unde
 		() => h.context.importLegacy({ ...payload, revision: h.state.revision }),
 		/empty private workbook/
 	);
+});
+test('intermediate 1 markers count as present while pre-arrival and post-transfer placeholders stay excluded', () => {
+	const h = harness({
+		revision: 'r1',
+		members: [],
+		periods: [],
+		entries: [],
+		doctrine: [],
+		publication: { digests: {}, versions: {}, publishedAt: '' }
+	});
+	const cells = ['1', 'Tue', '1', 'S - Link', '1', 'X'].map((value, i) => ({
+		week: i + 1,
+		value,
+		note: ''
+	}));
+	h.context.importLegacy({
+		revision: 'r1',
+		plan: {
+			members: [{ ...member, id: 'import-a' }],
+			candidates: [{ key: 'row', year: 2026, cells }],
+			doctrine: []
+		},
+		assignments: { row: 'import-a' },
+		markerChoices: { 'S - Link': 'Sat' },
+		inviterAssignments: {}
+	});
+	const s = A.snapshot(h.state, 2026, '2026-10-13', 'v');
+	assert.equal(s.annual[0].monitored, 3);
+	assert.equal(s.annual[0].attended, 3);
+	assert.equal(s.entries.find((e) => e.week === 3).day, 'Recorded');
+	assert.equal(s.entries.find((e) => e.week === 4).day, 'Sat');
+	assert.equal(A.isEligible(h.state.periods, 'import-a', A.weekStart(2026, 1)), false);
+	assert.equal(A.isEligible(h.state.periods, 'import-a', A.weekStart(2026, 5)), false);
+});
+test('intermediate 1 markers span a year boundary and explicit outside markers stop that inference', () => {
+	for (const boundary of ['1', 'X']) {
+		const h = harness({
+			revision: 'r1',
+			members: [],
+			periods: [],
+			entries: [],
+			doctrine: [],
+			publication: { digests: {}, versions: {}, publishedAt: '' }
+		});
+		const candidates = [
+			{
+				key: 'old',
+				year: 2025,
+				cells: [
+					{ week: 51, value: 'Sat', note: '' },
+					{ week: 52, value: boundary, note: '' }
+				]
+			},
+			{
+				key: 'new',
+				year: 2026,
+				cells: [
+					{ week: 1, value: '1', note: '' },
+					{ week: 2, value: 'Tue', note: '' }
+				]
+			}
+		];
+		h.context.importLegacy({
+			revision: 'r1',
+			plan: { members: [{ ...member, id: 'import-a' }], candidates, doctrine: [] },
+			assignments: { old: 'import-a', new: 'import-a' },
+			markerChoices: {},
+			inviterAssignments: {}
+		});
+		const s = A.snapshot(h.state, 2026, '2026-01-12', 'v');
+		assert.equal(s.annual[0].attended, boundary === '1' ? 2 : 1);
+		assert.equal(s.annual[0].monitored, boundary === '1' ? 2 : 1);
+	}
+});
+test('excluded dots and missing source week columns do not create monitored absences', () => {
+	const h = harness({
+		revision: 'r1',
+		members: [],
+		periods: [],
+		entries: [],
+		doctrine: [],
+		publication: { digests: {}, versions: {}, publishedAt: '' }
+	});
+	const cells = [
+		{ week: 1, value: '.', note: '' },
+		{ week: 2, value: 'Tue', note: '' },
+		{ week: 4, value: 'Fri', note: '' }
+	];
+	h.context.importLegacy({
+		revision: 'r1',
+		plan: {
+			members: [{ ...member, id: 'import-a' }],
+			candidates: [{ key: 'row', year: 2026, cells }],
+			doctrine: []
+		},
+		assignments: { row: 'import-a' },
+		markerChoices: { '.': 'Outside' },
+		inviterAssignments: {}
+	});
+	const s = A.snapshot(h.state, 2026, '2026-01-26', 'v');
+	assert.equal(s.annual[0].monitored, 2);
+	assert.equal(s.annual[0].attended, 2);
+	assert.equal(s.weekly[2].eligible, 0);
+});
+test('Google import preserves published IDs, name aliases and explanations on blank attendance cells', () => {
+	const h = harness({
+		revision: 'r1',
+		members: [],
+		periods: [],
+		entries: [],
+		doctrine: [],
+		publication: { digests: {}, versions: {}, publishedAt: '' }
+	});
+	const row = Array(13).fill('');
+	row[6] = 'Sample';
+	row[7] = 'Member';
+	row[8] = 'L';
+	row[9] = 'K';
+	const roster = { getValues: () => [[], [], row], getDisplayValues: () => [[], [], row] };
+	const attendance = {
+		getDisplayValues: () => [['Week', 1], [], ['Name', 'Dec 30-4'], ['Sample Old Member', '']],
+		getNotes: () => [[], [], [], ['', '']]
+	};
+	h.context.SpreadsheetApp.openById = () => ({
+		getSheetByName: (name) =>
+			name === 'Purok2026'
+				? { getDataRange: () => roster }
+				: name === '3-1(2026)'
+					? { getDataRange: () => attendance }
+					: null
+	});
+	h.context.UrlFetchApp.fetch = (url) => ({
+		getResponseCode: () => 200,
+		getContentText: () =>
+			JSON.stringify(
+				url.endsWith('manifest.json')
+					? {
+							schemaVersion: 1,
+							demo: false,
+							reports: [{ year: 2026, path: 'data/2026.json', version: 'v' }],
+							aliases: [{ name: 'Sample Old Member', memberId: 'import-stable' }]
+						}
+					: {
+							schemaVersion: 1,
+							year: 2026,
+							version: 'v',
+							members: [{ id: 'import-stable', name: 'Sample Member' }],
+							entries: [{ memberId: 'import-stable', week: 1, day: '', reason: 'Work commitment' }]
+						}
+			)
+	});
+	const plan = h.context.previewLegacyImport('sourceworkbook1234567890');
+	assert.equal(plan.members.length, 1);
+	assert.equal(plan.members[0].id, 'import-stable');
+	assert.equal(plan.candidates[0].memberId, 'import-stable');
+	h.context.importLegacy({
+		revision: 'r1',
+		plan,
+		assignments: { '2026:4': 'import-stable' },
+		markerChoices: {},
+		inviterAssignments: {}
+	});
+	assert.equal(h.state.entries[0].day, '');
+	assert.equal(h.state.entries[0].publicReason, 'Work commitment');
+	assert.equal(h.state.entries[0].memberId, 'import-stable');
 });
 test('source birthdays retain the source workbook timezone during import', () => {
 	const h = harness();

@@ -8,6 +8,54 @@ function normalizedName_(value) {
 }
 function previewLegacyImport(source) {
 	requireAdmin_();
+	var publicMemberIds = {},
+		publicNames = {},
+		publishedEntries = [];
+	var manifestResponse = UrlFetchApp.fetch(
+		'https://zaqxen.github.io/purok-attendance/data/manifest.json',
+		{ muteHttpExceptions: true }
+	);
+	if (manifestResponse.getResponseCode() !== 200)
+		throw new Error(
+			'Published reports could not be read. Retry import later; no private records were changed.'
+		);
+	var manifest = JSON.parse(manifestResponse.getContentText());
+	if (manifest.schemaVersion !== 1) throw new Error('Published report format is invalid.');
+	if (!manifest.demo) {
+		manifest.reports.forEach(function (item) {
+			if (!/^data\/\d{4}\.json$/.test(item.path)) throw new Error('Invalid published report path.');
+			var response = UrlFetchApp.fetch('https://zaqxen.github.io/purok-attendance/' + item.path, {
+				muteHttpExceptions: true
+			});
+			if (response.getResponseCode() !== 200)
+				throw new Error('A published attendance year could not be read. Retry import later.');
+			var report = JSON.parse(response.getContentText());
+			if (
+				report.schemaVersion !== 1 ||
+				report.year !== item.year ||
+				report.version !== item.version
+			)
+				throw new Error(
+					'Published attendance is being updated or is invalid. Retry import after deployment finishes.'
+				);
+			report.members.forEach(function (m) {
+				publicMemberIds[normalizedName_(m.name)] = m.id;
+				publicNames[m.id] = m.name;
+			});
+			report.entries.forEach(function (e) {
+				publishedEntries.push({
+					memberId: e.memberId,
+					year: report.year,
+					week: e.week,
+					reason: e.reason || ''
+				});
+			});
+		});
+		(manifest.aliases || []).forEach(function (alias) {
+			if (publicNames[alias.memberId])
+				publicMemberIds[normalizedName_(alias.name)] = alias.memberId;
+		});
+	}
 	var match = String(source).match(/(?:\/d\/)?([a-zA-Z0-9_-]{20,})/);
 	if (!match) throw new Error('Enter the original spreadsheet URL or ID.');
 	if (match[1] === PropertiesService.getScriptProperties().getProperty('DATA_SPREADSHEET_ID'))
@@ -25,7 +73,8 @@ function previewLegacyImport(source) {
 				? Utilities.formatDate(row[0], book.getSpreadsheetTimeZone(), 'yyyy-MM-dd')
 				: '';
 		members.push({
-			id: 'import-' + Utilities.getUuid(),
+			id:
+				publicMemberIds[normalizedName_(row[6] + ' ' + row[7])] || 'import-' + Utilities.getUuid(),
 			firstName: String(row[6]).trim(),
 			lastName: String(row[7]).trim(),
 			birthDate: birth,
@@ -65,13 +114,19 @@ function previewLegacyImport(source) {
 						})
 					);
 				});
-			var selected = matches.length === 1 ? matches[0].id : '';
-			if (!selected) {
-				var split = name.indexOf(' ');
+			var selected = matches.length === 1 ? matches[0].id : publicMemberIds[norm] || '';
+			if (
+				!selected ||
+				!members.some(function (m) {
+					return m.id === selected;
+				})
+			) {
+				var canonicalName = publicNames[selected] || name;
+				var split = canonicalName.indexOf(' ');
 				var historical = {
-					id: 'import-' + Utilities.getUuid(),
-					firstName: split < 0 ? name : name.slice(0, split),
-					lastName: split < 0 ? '' : name.slice(split + 1),
+					id: selected || 'import-' + Utilities.getUuid(),
+					firstName: split < 0 ? canonicalName : canonicalName.slice(0, split),
+					lastName: split < 0 ? '' : canonicalName.slice(split + 1),
 					birthDate: '',
 					mobile: '',
 					address: '',
@@ -127,6 +182,7 @@ function previewLegacyImport(source) {
 		members: members,
 		candidates: candidates,
 		markers: Object.keys(markers),
+		publishedEntries: publishedEntries,
 		doctrine: doctrine
 	};
 }
@@ -153,7 +209,7 @@ function importLegacy(payload) {
 		var members = [],
 			ids = {};
 		plan.members.forEach(function (input) {
-			if (typeof input.id !== 'string' || !/^import-[\w-]+$/.test(input.id) || ids[input.id])
+			if (typeof input.id !== 'string' || !/^[\w-]{1,100}$/.test(input.id) || ids[input.id])
 				throw new Error('Invalid import member ID.');
 			ids[input.id] = true;
 			var member = {
@@ -178,34 +234,91 @@ function importLegacy(payload) {
 			periods = [],
 			today = Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd'),
 			current = Attendance.reportYear(today);
+		var days = {
+			tue: 'Tue',
+			fri: 'Fri',
+			sat: 'Sat',
+			sun: 'Sun',
+			t: 'Tue',
+			f: 'Fri',
+			s: 'Sat',
+			su: 'Sun'
+		};
+		var publishedReasons = {};
+		(plan.publishedEntries || []).forEach(function (e) {
+			publishedReasons[e.memberId + ':' + e.year + ':' + e.week] = text_(e.reason, 1500);
+		});
+		// A 1 between actual attendances is confirmed present by the owner. Leading
+		// and trailing 1 placeholders stay excluded. X, explicit exclusions and gaps
+		// separate monitoring periods, including when a person returns in another year.
+		var timelines = {},
+			attendanceBounds = {};
 		plan.candidates.forEach(function (candidate) {
 			var id = payload.assignments[candidate.key];
 			if (!ids[id]) throw new Error('Match every attendance row to a member.');
-			var days = {
-				tue: 'Tue',
-				fri: 'Fri',
-				sat: 'Sat',
-				sun: 'Sun',
-				t: 'Tue',
-				f: 'Fri',
-				s: 'Sat',
-				su: 'Sun'
-			};
+			if (!timelines[id]) timelines[id] = [];
+			candidate.cells.forEach(function (cell) {
+				var code = String(cell.value).trim(),
+					choice = payload.markerChoices[code];
+				timelines[id].push({
+					start: Attendance.weekStart(candidate.year, cell.week),
+					day: days[code.toLowerCase()] || (Attendance.DAYS.indexOf(choice) >= 0 ? choice : ''),
+					outside: /^x$/i.test(code) || choice === 'Outside'
+				});
+			});
+		});
+		Object.keys(timelines).forEach(function (id) {
+			attendanceBounds[id] = [];
+			var bounds = null,
+				previous = '';
+			timelines[id]
+				.sort(function (a, b) {
+					return a.start.localeCompare(b.start);
+				})
+				.forEach(function (cell) {
+					if (cell.outside || (previous && cell.start !== Attendance.addDays(previous, 7))) {
+						if (bounds) attendanceBounds[id].push(bounds);
+						bounds = null;
+					}
+					if (cell.day && !cell.outside) {
+						if (!bounds) bounds = { first: cell.start, last: cell.start };
+						else bounds.last = cell.start;
+					}
+					previous = cell.start;
+				});
+			if (bounds) attendanceBounds[id].push(bounds);
+		});
+		plan.candidates.forEach(function (candidate) {
+			var id = payload.assignments[candidate.key];
+			if (!ids[id]) throw new Error('Match every attendance row to a member.');
 			var span = null;
+			var previousStart = '';
 			candidate.cells.forEach(function (cell) {
 				var start = Attendance.weekStart(candidate.year, cell.week),
 					code = String(cell.value).trim();
-				var outside = code === '1' || /^x$/i.test(code),
+				if (span && previousStart && start !== Attendance.addDays(previousStart, 7)) {
+					span.end = Attendance.addDays(previousStart, 7);
+					periods.push(span);
+					span = null;
+				}
+				previousStart = start;
+				var intermediateOne =
+					code === '1' &&
+					attendanceBounds[id].some(function (bounds) {
+						return bounds.first < start && start < bounds.last;
+					});
+				var outside = (code === '1' && !intermediateOne) || /^x$/i.test(code),
 					day = '';
 				if (code && !outside) {
-					if (Object.prototype.hasOwnProperty.call(days, code.toLowerCase()))
+					if (intermediateOne) day = 'Recorded';
+					else if (Object.prototype.hasOwnProperty.call(days, code.toLowerCase()))
 						day = days[code.toLowerCase()];
 					else {
 						var choice = payload.markerChoices[code];
-						if (['Recorded', 'Absent', 'Outside'].indexOf(choice) === -1)
+						if (Attendance.DAYS.concat(['Absent', 'Outside']).indexOf(choice) === -1)
 							throw new Error('Decide how each legacy marker should be interpreted.');
 						outside = choice === 'Outside';
-						day = choice === 'Recorded' ? 'Recorded' : '';
+						day = Attendance.DAYS.indexOf(choice) >= 0 ? choice : '';
 					}
 				}
 				if (outside) {
@@ -217,7 +330,8 @@ function importLegacy(payload) {
 					return;
 				}
 				if (!span) span = { id: Utilities.getUuid(), memberId: id, start: start, end: '' };
-				if (day || cell.note) {
+				var reason = publishedReasons[id + ':' + candidate.year + ':' + cell.week] || '';
+				if (day || cell.note || reason) {
 					var key = id + ':' + candidate.year + ':' + cell.week;
 					if (lookup[key])
 						throw new Error(
@@ -230,7 +344,7 @@ function importLegacy(payload) {
 						year: candidate.year,
 						week: cell.week,
 						day: day,
-						publicReason: '',
+						publicReason: reason,
 						privateNote: text_(String(cell.note || ''), 1500)
 					});
 				}

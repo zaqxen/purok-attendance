@@ -3,6 +3,13 @@ const path = require('node:path');
 const A = require('../lib/attendance.js');
 const directory = path.join(__dirname, '..', 'docs', 'data');
 fs.mkdirSync(directory, { recursive: true });
+if (
+	fs.existsSync(path.join(directory, 'manifest.json')) &&
+	JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8')).demo === false
+)
+	throw new Error(
+		'Real attendance reports are present. Generate a demo only in a separate development copy.'
+	);
 const names = [
 	'Sample Member A',
 	'Sample Member B',
