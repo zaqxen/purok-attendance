@@ -601,6 +601,10 @@ function publishReports(revision) {
 		var state = loadState_();
 		if (state.revision !== revision)
 			throw new Error('Records changed in another session. Reload before publishing.');
+		if (!state.members.length)
+			throw new Error(
+				'Import your existing Sheet or add members before publishing. Existing public reports have not been changed.'
+			);
 		var today = Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd'),
 			current = Attendance.reportYear(today);
 		var years = [current];

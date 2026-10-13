@@ -267,6 +267,23 @@ test('correcting periods hides excluded entries from public exports but retains 
 		/Tuesday/
 	);
 });
+test('an empty private workbook cannot overwrite existing public reports', () => {
+	const h = harness({
+		revision: 'r1',
+		members: [],
+		periods: [],
+		entries: [],
+		doctrine: [],
+		publication: { digests: {}, versions: {} }
+	});
+	let requests = 0;
+	h.context.github_ = () => {
+		requests++;
+	};
+	assert.throws(() => h.context.publishReports('r1'), /Import your existing Sheet/);
+	assert.equal(requests, 0);
+	assert.equal(h.state.revision, 'r1');
+});
 test('publication exposes an allowlist only and a GitHub failure preserves saved private records', () => {
 	const h = harness();
 	h.context.saveAttendance({
